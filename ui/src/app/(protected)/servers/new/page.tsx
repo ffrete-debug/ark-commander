@@ -25,12 +25,14 @@ export default function ServerNewPage() {
   const { createServer } = serversActions;
 
   const [formData, setFormData] = useState<Partial<Server>>({
+    identifier: '',
     session_name: 'ARK Server',
     port: 7777,
     query_port: 27015,
     rcon_port: 27020,
     map: 'TheIsland',
     max_players: 70,
+    admin_password: '',
     server_args: {
       query_params: {},
       command_line_args: {},
@@ -102,6 +104,10 @@ export default function ServerNewPage() {
             <TabsContent value="basic">
               <form onSubmit={handleSubmit} className="space-y-4 py-4">
                 <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="identifier">{t('serverIdentifier')}</Label>
+                    <Input id="identifier" name="identifier" value={formData.identifier || ''} onChange={handleChange} placeholder={t('serverIdentifierPlaceholder')} />
+                  </div>
                   <div>
                     <Label htmlFor="session_name">{t('serverName')}</Label>
                     <Input id="session_name" name="session_name" value={formData.session_name || ''} onChange={handleChange} />

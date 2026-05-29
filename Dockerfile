@@ -27,7 +27,7 @@ COPY server/ ./
 RUN go mod tidy && CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -trimpath -ldflags="-s -w" -o main .
 
 # 最终运行阶段
-FROM alpine:latest
+FROM node:23-alpine
 
 # 安装必要的包
 RUN apk add --no-cache ca-certificates docker-cli sqlite wget
@@ -39,19 +39,35 @@ WORKDIR /app
 COPY --from=backend-builder /app/main .
 
 # 从前端构建阶段复制静态文件
-COPY --from=frontend-builder /app/ui/public ./static/public
+COPY --from=frontend-builder /app/ui/public ./static/.next/standalone/public
 COPY --from=frontend-builder /app/ui/.next/standalone ./static/.next/standalone
-COPY --from=frontend-builder /app/ui/.next/static ./static/.next/static
+COPY --from=frontend-builder /app/ui/.next/static ./static/.next/standalone/.next/static
 
 # 创建数据目录
 RUN mkdir -p /data
 
+# Criar script de entrada que inicia ambos os servidores
+RUN printf '#!/bin/sh\n\
+# Iniciar backend Go em background\n\
+./main &\n\
+\n\
+# Aguardar backend iniciar\n\
+sleep 2\n\
+\n\
+# Iniciar frontend Next.js\n\
+export PORT=3000\n\
+export HOSTNAME=0.0.0.0\n\
+export NEXT_PUBLIC_API_BASE=http://localhost:8080/api\n\
+cd /app/static/.next/standalone\n\
+exec node server.js\n\
+' > /app/entrypoint.sh && chmod +x /app/entrypoint.sh
+
 # 暴露端口
-EXPOSE 8080
+EXPOSE 8080 3000
 
 # 设置环境变量
 ENV GIN_MODE=release
 ENV DB_PATH=/data/ark_server.db
 
 # 启动应用
-CMD ["./main"]
+CMD ["/app/entrypoint.sh"]

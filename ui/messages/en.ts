@@ -329,7 +329,10 @@ export default {
       customMapPlaceholder: 'Enter custom map name',
       customMap: 'Custom Map',
       noMatchingMaps: 'No matching maps',
-      mapId: 'Map ID'
+      mapId: 'Map ID',
+      officialMaps: 'Official Maps',
+      searchMaps: 'Search maps...',
+      serverCreateError: 'Failed to create server. Please check your input and try again.'
     },
     // Editor related
     editor: {
