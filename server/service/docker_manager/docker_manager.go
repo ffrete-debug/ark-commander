@@ -4,15 +4,19 @@ import (
 	"ark-server-commander/database"
 	"ark-server-commander/models"
 	"ark-server-commander/utils"
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"io"
+	"strconv"
+	"strings"
 	"sync"
 
 	"github.com/containerd/errdefs"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
+	"github.com/docker/docker/pkg/stdcopy"
 	"github.com/docker/go-connections/nat"
 	"go.uber.org/zap"
 )
@@ -422,4 +426,30 @@ func (dm *DockerManager) GetContainerEnvVars(containerName string) (map[string]s
 	}
 
 	return envVars, nil
+}
+
+// GetContainerLogs 获取容器日志
+// containerName: 容器名称
+// tail: 返回最后N行日志，0表示所有日志
+// 返回: 日志文本和错误信息
+func (dm *DockerManager) GetContainerLogs(containerName string, tail int) (string, error) {
+	options := container.LogsOptions{
+		ShowStdout: true,
+		ShowStderr: true,
+	}
+	if tail > 0 {
+		options.Tail = strconv.Itoa(tail)
+	}
+	reader, err := dm.client.ContainerLogs(dm.ctx, containerName, options)
+	if err != nil {
+		return "", fmt.Errorf("获取容器日志失败: %v", err)
+	}
+	defer reader.Close()
+
+	var buf bytes.Buffer
+	_, err = stdcopy.StdCopy(&buf, &buf, reader)
+	if err != nil {
+		return "", fmt.Errorf("读取容器日志失败: %v", err)
+	}
+	return strings.TrimSpace(buf.String()), nil
 }

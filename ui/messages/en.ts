@@ -38,7 +38,11 @@ export default {
     theme: 'Theme',
     dark: 'Dark',
     light: 'Light',
-    auto: 'Auto'
+    auto: 'Auto',
+    lines: 'lines',
+    all: 'All',
+    autoRefreshOn: 'Auto Refresh On',
+    autoRefreshOff: 'Auto Refresh Off'
   },
 
   // Navigation
@@ -222,6 +226,8 @@ export default {
     copyToClipboard: 'Copied to clipboard',
     copyFailed: 'Copy failed, please copy manually',
     authenticationFailed: 'Authentication failed, please login again',
+    serverLogs: 'Server Logs',
+    noLogs: 'No logs yet',
     getServerListFailed: 'Failed to get server list, please try again later',
     loadServerInfoFailed: 'Failed to load server info, please try again later',
     operationFailed: 'Operation failed, please try again later',

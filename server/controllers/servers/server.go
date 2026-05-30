@@ -2,6 +2,7 @@ package servers
 
 import (
 	"net/http"
+	"strconv"
 
 	"ark-server-commander/models"
 	"ark-server-commander/service/server"
@@ -126,6 +127,50 @@ func GetServerRCON(c *gin.Context) {
 	serverID := c.Param("id")
 
 	data, err := serverService.GetServerRCON(userID, serverID)
+	if err != nil {
+		if err.Error() == "无效的服务器ID" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		if err.Error() == "服务器不存在" {
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "获取成功",
+		"data":    data,
+	})
+}
+
+// GetServerLogs 获取服务器日志
+// @Summary 获取服务器日志
+// @Description 获取指定服务器的Docker容器日志
+// @Tags 服务器管理
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param id path int true "服务器ID"
+// @Param tail query int false "返回最后N行日志，默认200"
+// @Success 200 {object} map[string]string "获取成功"
+// @Failure 400 {object} map[string]string "请求错误"
+// @Failure 404 {object} map[string]string "服务器不存在"
+// @Failure 401 {object} map[string]string "未授权"
+// @Failure 500 {object} map[string]string "服务器错误"
+// @Router /servers/{id}/logs [get]
+func GetServerLogs(c *gin.Context) {
+	userID := c.GetUint("user_id")
+	serverID := c.Param("id")
+	tailStr := c.DefaultQuery("tail", "200")
+	tail, err := strconv.Atoi(tailStr)
+	if err != nil || tail < 0 {
+		tail = 200
+	}
+
+	data, err := serverService.GetServerLogs(userID, serverID, tail)
 	if err != nil {
 		if err.Error() == "无效的服务器ID" {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

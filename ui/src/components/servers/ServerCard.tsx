@@ -26,6 +26,7 @@ import {
   EyeOff,
   Copy,
   RefreshCw,
+  FileText,
 } from 'lucide-react';
 
 interface ServerCardProps {
@@ -36,6 +37,7 @@ interface ServerCardProps {
   onRestart: (server: Server) => void;
   onEdit: (server: Server) => void;
   onDelete: (server: Server) => void;
+  onViewLogs?: (server: Server) => void;
 }
 
 export function ServerCard({
@@ -46,6 +48,7 @@ export function ServerCard({
   onRestart,
   onEdit,
   onDelete,
+  onViewLogs,
 }: ServerCardProps) {
   const t = useTranslations('servers');
   const [showPassword, setShowPassword] = useState(false);
@@ -179,6 +182,18 @@ export function ServerCard({
             >
               <Edit className="h-4 w-4" />
             </Button>
+
+            {/* 日志按钮 */}
+            {onViewLogs && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0 text-gray-600 hover:text-gray-700 hover:bg-gray-100"
+                onClick={() => onViewLogs(server)}
+              >
+                <FileText className="h-4 w-4" />
+              </Button>
+            )}
           </div>
         </div>
         <Badge

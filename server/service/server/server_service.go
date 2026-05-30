@@ -288,6 +288,31 @@ func (s *ServerService) GetServer(userID uint, serverID string) (*models.ServerR
 }
 
 // GetServerRCON 获取服务器RCON连接信息
+// GetServerLogs 获取服务器日志
+func (s *ServerService) GetServerLogs(userID uint, serverID string, tail int) (string, error) {
+	id, err := strconv.ParseUint(serverID, 10, 32)
+	if err != nil {
+		return "", fmt.Errorf("无效的服务器ID")
+	}
+
+	var server models.Server
+	if err := database.DB.Where("id = ? AND user_id = ?", id, userID).First(&server).Error; err != nil {
+		return "", fmt.Errorf("服务器不存在")
+	}
+
+	dockerManager, err := docker_manager.GetDockerManager()
+	if err != nil {
+		return "", fmt.Errorf("获取Docker管理器失败: %w", err)
+	}
+
+	containerName := utils.GetServerContainerName(server.ID)
+	logs, err := dockerManager.GetContainerLogs(containerName, tail)
+	if err != nil {
+		return "", fmt.Errorf("获取日志失败: %w", err)
+	}
+	return logs, nil
+}
+
 func (s *ServerService) GetServerRCON(userID uint, serverID string) (map[string]interface{}, error) {
 	id, err := strconv.ParseUint(serverID, 10, 32)
 	if err != nil {

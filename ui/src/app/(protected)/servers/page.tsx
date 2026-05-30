@@ -36,6 +36,10 @@ export default function ServersPage() {
     router.push(`/servers/${server.id}/edit`);
   };
 
+  const handleViewLogs = (server: Server) => {
+    router.push(`/servers/${server.id}/logs`);
+  };
+
   const handleDeleteServer = async (server: Server) => {
     if (server.status === 'running') {
       setError(t('cannotDeleteRunning'));
@@ -110,6 +114,7 @@ export default function ServersPage() {
               onRestart={handleRestartServer}
               onEdit={handleEditServer}
               onDelete={handleDeleteServer}
+              onViewLogs={handleViewLogs}
             />
           ))}
         </div>

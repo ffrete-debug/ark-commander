@@ -37,7 +37,11 @@ export default {
     theme: '主题',
     dark: '深色',
     light: '浅色',
-    auto: '自动'
+    auto: '自动',
+    lines: '行',
+    all: '全部',
+    autoRefreshOn: '自动刷新开',
+    autoRefreshOff: '自动刷新关'
   },
 
   // 导航
@@ -220,6 +224,8 @@ export default {
     copyToClipboard: '已复制到剪贴板',
     copyFailed: '复制失败，请手动复制',
     authenticationFailed: '认证失败，请重新登录',
+    serverLogs: '服务器日志',
+    noLogs: '暂无日志',
     getServerListFailed: '获取服务器列表失败，请稍后重试',
     loadServerInfoFailed: '加载服务器信息失败，请稍后重试',
     operationFailed: '操作失败，请稍后重试',

@@ -249,24 +249,31 @@ export default function HomePage() {
                             </CardContent>
                         </Card>
 
-                        <Card className="h-full opacity-60 border-2 border-gray-100">
-                            <CardContent className="text-center space-y-6 p-6">
-                                <div className="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
-                                    <span className="text-2xl">📊</span>
-                                </div>
-                                <div>
-                                    <h3 className="text-xl font-semibold text-gray-500 mb-2">
-                                        {t('logMonitoring')}
-                                    </h3>
-                                    <p className="text-gray-400 leading-relaxed">
-                                        {t('logMonitoringDesc')}
-                                    </p>
-                                </div>
-                                <Button variant="secondary" size="sm" disabled>
-                                    {t('comingSoon')}
-                                </Button>
-                            </CardContent>
-                        </Card>
+                        <Link href="/servers" className="block">
+                            <Card className="h-full hover:shadow-xl transition-all duration-300 cursor-pointer group border-2 border-transparent hover:border-green-200">
+                                <CardContent className="text-center space-y-6 p-6">
+                                    <div className="mx-auto w-12 h-12 bg-green-100 group-hover:bg-green-200 rounded-full flex items-center justify-center transition-colors">
+                                        <span className="text-2xl">📊</span>
+                                    </div>
+                                    <div>
+                                        <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                                            {t('logMonitoring')}
+                                        </h3>
+                                        <p className="text-gray-600 leading-relaxed">
+                                            {t('logMonitoringDesc')}
+                                        </p>
+                                    </div>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="group-hover:bg-green-50 text-green-600"
+                                    >
+                                        {t('startManage')}
+                                        <span className="ml-1">→</span>
+                                    </Button>
+                                </CardContent>
+                            </Card>
+                        </Link>
                     </div>
                 </CardContent>
             </Card>
