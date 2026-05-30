@@ -300,8 +300,8 @@ func parseSizeFromProgress(progress string) int64 {
 // imageName: 镜像名称
 // 返回: 是否有更新和错误信息
 func (dm *DockerManager) CheckImageUpdate(imageName string) (bool, error) {
-	// 获取本地镜像信息
-	localImageInfo, err := dm.GetImageInfo(imageName)
+	// 获取本地镜像的完整信息（包含 RepoDigests）
+	imageInspect, err := dm.client.ImageInspect(dm.ctx, imageName)
 	if err != nil {
 		// 如果本地镜像不存在，认为有更新（需要下载）
 		if errdefs.IsNotFound(err) {
@@ -310,15 +310,36 @@ func (dm *DockerManager) CheckImageUpdate(imageName string) (bool, error) {
 		return false, fmt.Errorf("获取本地镜像信息失败: %v", err)
 	}
 
-	// 尝试拉取最新镜像信息（不实际下载）
-	// 这里简化实现，实际应该比较镜像的digest
-	// 由于Docker API限制，我们暂时返回false（没有更新）
-	// 在实际生产环境中，可以通过比较镜像的创建时间或digest来判断
-	_ = localImageInfo
+	// Use Docker Distribution API to inspect remote manifest digest
+	distInspect, err := dm.client.DistributionInspect(dm.ctx, imageName, "")
+	if err != nil {
+		// If registry unreachable, assume no update
+		utils.Warn("failed to inspect remote manifest", zap.String("image", imageName), zap.Error(err))
+		return false, nil
+	}
 
-	// TODO: 实现真正的镜像更新检查逻辑
-	// 可以通过Docker Registry API来获取远程镜像信息并比较
-	return false, nil
+	remoteDigest := distInspect.Descriptor.Digest.String()
+
+	// Local digest comes from RepoDigests (e.g., "tbro98/ase-server@sha256:...")
+	localDigest := ""
+	if len(imageInspect.RepoDigests) > 0 {
+		parts := strings.SplitN(imageInspect.RepoDigests[0], "@", 2)
+		if len(parts) == 2 {
+			localDigest = parts[1]
+		}
+	}
+
+	// Fallback: compare image ID (which is also a digest)
+	if localDigest == "" {
+		localDigest = imageInspect.ID
+	}
+
+	hasUpdate := localDigest != remoteDigest
+	if hasUpdate {
+		utils.Info("image update available", zap.String("image", imageName),
+			zap.String("local", localDigest), zap.String("remote", remoteDigest))
+	}
+	return hasUpdate, nil
 }
 
 // GetImageInfo 获取本地镜像详细信息

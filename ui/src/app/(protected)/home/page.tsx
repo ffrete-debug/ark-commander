@@ -104,6 +104,9 @@ export default function HomePage() {
             }
 
             console.log('镜像更新检查完成');
+
+            // 刷新镜像状态以显示更新结果
+            await refreshImageStatus();
         } catch (error) {
             console.error('检查更新失败:', error);
         }
