@@ -16,7 +16,7 @@ export default function ServersPage() {
   const tCommon = useTranslations('common');
   const router = useRouter();
   const servers = useServers();
-  const { fetchServers, getImageStatus, startServer, stopServer, deleteServer } = serversActions;
+  const { fetchServers, getImageStatus, startServer, stopServer, restartServer, deleteServer } = serversActions;
   const isLoading = useServersIsLoading();
   const imageStatus = useImageStatus();
 
@@ -55,6 +55,7 @@ export default function ServersPage() {
 
   const handleStartServer = (server: Server) => startServer(server.id);
   const handleStopServer = (server: Server) => stopServer(server.id);
+  const handleRestartServer = (server: Server) => restartServer(server.id);
 
   return (
     <div className="w-full max-w-none py-8">
@@ -106,6 +107,7 @@ export default function ServersPage() {
               canStartServer={imageStatus?.can_start_server ?? false}
               onStart={handleStartServer}
               onStop={handleStopServer}
+              onRestart={handleRestartServer}
               onEdit={handleEditServer}
               onDelete={handleDeleteServer}
             />

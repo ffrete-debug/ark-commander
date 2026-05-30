@@ -77,6 +77,7 @@ func RegisterRoutes(r *gin.Engine) {
 				serverRoutes.DELETE("/:id", servers.DeleteServer)
 				serverRoutes.POST("/:id/start", servers.StartServer)
 				serverRoutes.POST("/:id/stop", servers.StopServer)
+				serverRoutes.POST("/:id/restart", servers.RestartServer)
 				serverRoutes.POST("/:id/recreate", servers.RecreateContainer)
 				serverRoutes.GET("/:id/rcon", servers.GetServerRCON)
 			}

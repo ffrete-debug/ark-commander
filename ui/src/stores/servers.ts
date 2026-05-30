@@ -7,7 +7,7 @@ export interface Server {
     id: string;
     identifier: string;
     session_name: string;
-    status: 'running' | 'stopped' | 'starting' | 'stopping';
+    status: 'running' | 'stopped' | 'starting' | 'stopping' | 'restarting';
     port: number;
     query_port: number;
     rcon_port: number;
@@ -65,6 +65,7 @@ interface ServersActions {
     getImageStatus: () => Promise<void>;
     startServer: (serverId: string) => Promise<void>;
     stopServer: (serverId: string) => Promise<void>;
+    restartServer: (serverId: string) => Promise<void>;
     updateServerStatus: (serverId: string, status: Server['status']) => void;
 }
 
@@ -173,6 +174,16 @@ const useServersStore = create<ServersState>((set, get) => ({
                 setTimeout(() => get().actions.updateServerStatus(serverId, 'stopped'), 2000);
             } catch (error) {
                 set({ error: '停止服务器失败' });
+                throw error;
+            }
+        },
+        restartServer: async (serverId) => {
+            try {
+                await axios.post(`/api/servers/${serverId}/restart`, {}, { headers: getAuthHeaders() });
+                get().actions.updateServerStatus(serverId, 'restarting');
+                setTimeout(() => get().actions.updateServerStatus(serverId, 'running'), 5000);
+            } catch (error) {
+                set({ error: '重启服务器失败' });
                 throw error;
             }
         },

@@ -360,3 +360,44 @@ func RecreateContainer(c *gin.Context) {
 		"message": "容器重建已开始",
 	})
 }
+
+// RestartServer 重启服务器
+// @Summary 重启服务器
+// @Description 重启指定的ARK服务器（先停止再启动）
+// @Tags 服务器管理
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param id path int true "服务器ID"
+// @Success 200 {object} map[string]string "重启成功"
+// @Failure 400 {object} map[string]string "请求错误"
+// @Failure 401 {object} map[string]string "未授权"
+// @Failure 404 {object} map[string]string "服务器不存在"
+// @Failure 500 {object} map[string]string "服务器错误"
+// @Router /servers/{id}/restart [post]
+func RestartServer(c *gin.Context) {
+	userID := c.GetUint("user_id")
+	serverID := c.Param("id")
+
+	// stop first
+	if err := serverService.StopServer(userID, serverID); err != nil {
+		if err.Error() == "无效的服务器ID" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		if err.Error() == "服务器不存在" {
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
+		}
+		// ignore "already stopped" errors
+	}
+	// then start
+	if err := serverService.StartServer(userID, serverID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "服务器重启命令已发送",
+	})
+}

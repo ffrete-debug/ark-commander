@@ -25,6 +25,7 @@ import {
   Eye,
   EyeOff,
   Copy,
+  RefreshCw,
 } from 'lucide-react';
 
 interface ServerCardProps {
@@ -32,6 +33,7 @@ interface ServerCardProps {
   canStartServer: boolean;
   onStart: (server: Server) => void;
   onStop: (server: Server) => void;
+  onRestart: (server: Server) => void;
   onEdit: (server: Server) => void;
   onDelete: (server: Server) => void;
 }
@@ -41,6 +43,7 @@ export function ServerCard({
   canStartServer,
   onStart,
   onStop,
+  onRestart,
   onEdit,
   onDelete,
 }: ServerCardProps) {
@@ -63,6 +66,7 @@ export function ServerCard({
         return 'destructive';
       case 'starting':
       case 'stopping':
+      case 'restarting':
         return 'secondary';
       default:
         return 'outline';
@@ -101,6 +105,7 @@ export function ServerCard({
         );
       case 'starting':
       case 'stopping':
+      case 'restarting':
         return (
           <Button
             variant="ghost"
@@ -133,6 +138,18 @@ export function ServerCard({
           <div className="flex items-center gap-1 flex-shrink-0">
             {/* 启动/停止按钮 */}
             {StartStopButton()}
+
+            {/* 重启按钮 */}
+            {server.status === 'running' && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0 text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                onClick={() => onRestart(server)}
+              >
+                <RefreshCw className="h-4 w-4" />
+              </Button>
+            )}
 
             {/* 删除按钮 */}
             <Popover>
