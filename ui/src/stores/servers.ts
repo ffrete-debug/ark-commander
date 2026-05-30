@@ -144,17 +144,12 @@ const useServersStore = create<ServersState>((set, get) => ({
             }
         },
         getImageStatus: async () => {
-            if (get().isLoading) return; // 如果正在加载，则不执行任何操作
-
-            set({ isLoading: true, error: null });
             try {
                 const response = await axios.get('/api/images/status', { headers: getAuthHeaders() });
                 set({ imageStatus: response.data.data });
             } catch (error) {
                 set({ error: '获取镜像状态失败' });
                 throw error;
-            } finally {
-                set({ isLoading: false });
             }
         },
         startServer: async (serverId) => {
