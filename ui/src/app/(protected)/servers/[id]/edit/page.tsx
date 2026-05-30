@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, ArrowLeft, Save, Eye, EyeOff } from 'lucide-react';
+import { Loader2, ArrowLeft, Save, Eye, EyeOff, Download, Upload } from 'lucide-react';
 import { GameUserSettingsEditor } from '@/components/servers/GameUserSettingsEditor';
 import { GameIniEditor } from '@/components/servers/GameIniEditor';
 import { ServerArgsEditor } from '@/components/servers/ServerArgsEditor';
@@ -73,6 +73,72 @@ export default function ServerEditPage() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleDownloadText = (content: string, filename: string) => {
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleExportAll = () => {
+    const config = {
+      game_user_settings: formData.game_user_settings || '',
+      game_ini: formData.game_ini || '',
+      server_args: formData.server_args || { query_params: {}, command_line_args: {}, custom_args: [] },
+      exported_at: new Date().toISOString(),
+    };
+    const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `server-config-${formData.identifier || 'export'}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImportAll = async () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+      try {
+        const text = await file.text();
+        const config = JSON.parse(text);
+        setFormData((prev) => ({
+          ...prev,
+          game_user_settings: config.game_user_settings || prev.game_user_settings,
+          game_ini: config.game_ini || prev.game_ini,
+          server_args: config.server_args || prev.server_args,
+        }));
+      } catch (err) {
+        console.error('Import failed:', err);
+      }
+    };
+    input.click();
+  };
+
+  const handleImportFile = (accept: string, callback: (content: string) => void) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = accept;
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+      try {
+        const text = await file.text();
+        callback(text);
+      } catch (err) {
+        console.error('Import failed:', err);
+      }
+    };
+    input.click();
   };
 
   const handleBack = () => {
@@ -202,9 +268,25 @@ export default function ServerEditPage() {
                   <Input id="max_players" name="max_players" type="number" value={formData.max_players || ''} onChange={handleChange} />
                 </div>
               </form>
+              <div className="flex gap-2 pt-4 border-t mt-4">
+                <Button type="button" variant="outline" size="sm" onClick={handleExportAll}>
+                  <Download className="h-4 w-4 mr-1" />{tServersEdit('exportAll')}
+                </Button>
+                <Button type="button" variant="outline" size="sm" onClick={handleImportAll}>
+                  <Upload className="h-4 w-4 mr-1" />{tServersEdit('importAll')}
+                </Button>
+              </div>
             </TabsContent>
 
             <TabsContent value="game_user_settings">
+              <div className="flex justify-end gap-2 mb-2">
+                <Button variant="outline" size="sm" onClick={() => handleDownloadText(formData.game_user_settings || '', 'GameUserSettings.ini')}>
+                  <Download className="h-3 w-3 mr-1" />{tServersEdit('exportFile')}
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => handleImportFile('.ini,.txt', (text) => setFormData(p => ({ ...p, game_user_settings: text })))}>
+                  <Upload className="h-3 w-3 mr-1" />{tServersEdit('importFile')}
+                </Button>
+              </div>
               <GameUserSettingsEditor
                 value={formData.game_user_settings}
                 onChange={(v) => setFormData(p => ({ ...p, game_user_settings: v }))}
@@ -212,10 +294,26 @@ export default function ServerEditPage() {
             </TabsContent>
 
             <TabsContent value="game_ini">
+              <div className="flex justify-end gap-2 mb-2">
+                <Button variant="outline" size="sm" onClick={() => handleDownloadText(formData.game_ini || '', 'Game.ini')}>
+                  <Download className="h-3 w-3 mr-1" />{tServersEdit('exportFile')}
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => handleImportFile('.ini,.txt', (text) => setFormData(p => ({ ...p, game_ini: text })))}>
+                  <Upload className="h-3 w-3 mr-1" />{tServersEdit('importFile')}
+                </Button>
+              </div>
               <GameIniEditor />
             </TabsContent>
 
             <TabsContent value="server_args">
+              <div className="flex justify-end gap-2 mb-2">
+                <Button variant="outline" size="sm" onClick={() => handleDownloadText(JSON.stringify(formData.server_args || { query_params: {}, command_line_args: {}, custom_args: [] }, null, 2), 'SERVER_ARGS.json')}>
+                  <Download className="h-3 w-3 mr-1" />{tServersEdit('exportFile')}
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => handleImportFile('.json,.txt', (text) => { try { setFormData(p => ({ ...p, server_args: JSON.parse(text) })); } catch {} })}>
+                  <Upload className="h-3 w-3 mr-1" />{tServersEdit('importFile')}
+                </Button>
+              </div>
               {/* @ts-expect-error: Prop 'value' is not available on type 'IntrinsicAttributes' */}
               <ServerArgsEditor value={formData.server_args} onChange={(v) => setFormData(p => ({ ...p, server_args: v }))} />
             </TabsContent>
