@@ -27,6 +27,7 @@ export default {
     copy: 'Copy',
     download: 'Download',
     upload: 'Upload',
+    rename: 'Rename',
     export: 'Export',
     import: 'Import',
     settings: 'Settings',
@@ -45,6 +46,7 @@ export default {
     home: 'Home',
     dashboard: 'Dashboard',
     servers: 'Server Management',
+    plugins: 'Plugins',
     players: 'Player Management',
     logs: 'Log Monitoring',
     settings: 'Settings',
@@ -919,5 +921,29 @@ BabyImprintAmountMultiplier=1.0`
     usernameExists: 'Username already exists',
     serverNameExists: 'Server name already exists',
     portInUse: 'Port is already in use'
+  },
+
+  // Plugins
+  plugins: {
+    title: 'Plugin Manager',
+    selectServer: 'Select a server...',
+    selectServerHint: 'Select a server above to manage its plugins',
+    root: 'Root',
+    upload: 'Upload',
+    newFolder: 'New Folder',
+    folderNamePlaceholder: 'Folder name',
+    rename: 'Rename',
+    delete: 'Delete',
+    download: 'Download',
+    refresh: 'Refresh',
+    uploading: 'Uploading...',
+    empty: 'This folder is empty',
+    dragDropHint: 'Drag & drop files here to upload',
+    confirmDelete: 'Delete "{name}"?',
+    editing: 'Editing',
+    edit: 'Edit',
+    saveSuccess: 'File saved successfully',
+    extract: 'Extract',
+    downloadZip: 'Download as ZIP'
   }
 }

@@ -34,7 +34,7 @@ export async function middleware(request: NextRequest) {
   // 认证检查
   const token = request.cookies.get('auth-token')?.value;
   const isAuthPage = pathname.startsWith('/login') || pathname.startsWith('/init');
-  const isProtectedPage = pathname.startsWith('/home') || pathname.startsWith('/servers');
+  const isProtectedPage = pathname.startsWith('/home') || pathname.startsWith('/servers') || pathname.startsWith('/plugins');
   const isRootPage = pathname === '/';
 
   // 如果访问受保护页面但没有token，重定向到登录页

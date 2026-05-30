@@ -3,6 +3,7 @@ package routes
 import (
 	"ark-server-commander/controllers/auth"
 	"ark-server-commander/controllers/images"
+	"ark-server-commander/controllers/plugins"
 	"ark-server-commander/controllers/servers"
 	"ark-server-commander/middleware"
 	"fmt"
@@ -88,6 +89,21 @@ func RegisterRoutes(r *gin.Engine) {
 				imageRoutes.GET("/check-updates", images.CheckImageUpdates)
 				imageRoutes.POST("/update", images.UpdateImage)
 				imageRoutes.GET("/affected", images.GetAffectedServers)
+			}
+
+			// 插件文件管理路由
+			pluginRoutes := protected.Group("/plugins")
+			{
+				pluginRoutes.GET("", plugins.ListFiles)
+				pluginRoutes.POST("/upload", plugins.UploadFile)
+				pluginRoutes.DELETE("/delete", plugins.DeleteFile)
+				pluginRoutes.POST("/rename", plugins.RenameFile)
+				pluginRoutes.POST("/mkdir", plugins.CreateDir)
+				pluginRoutes.GET("/download", plugins.DownloadFile)
+				pluginRoutes.GET("/read", plugins.ReadFile)
+				pluginRoutes.POST("/write", plugins.WriteFile)
+				pluginRoutes.POST("/unzip", plugins.UnzipFile)
+				pluginRoutes.GET("/zip-download", plugins.ZipDownload)
 			}
 		}
 	}
