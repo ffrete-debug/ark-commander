@@ -334,7 +334,10 @@ export default {
       mapId: 'Map ID',
       officialMaps: 'Official Maps',
       searchMaps: 'Search maps...',
-      serverCreateError: 'Failed to create server. Please check your input and try again.'
+      serverCreateError: 'Failed to create server. Please check your input and try again.',
+      exportAll: 'Export All Config',
+      importAll: 'Import All Config',
+      exportFile: 'Download'
     },
     // Editor related
     editor: {

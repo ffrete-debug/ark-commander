@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Eye, EyeOff } from 'lucide-react';
+import { Loader2, Eye, EyeOff, Download, Upload } from 'lucide-react';
 import { GameUserSettingsEditor } from './GameUserSettingsEditor';
 import { GameIniEditor } from './GameIniEditor';
 import { ServerArgsEditor } from './ServerArgsEditor';
@@ -72,6 +72,55 @@ export function ServerEditModal({
     e.preventDefault();
     onSave(formData);
   }
+
+  const handleExportAll = () => {
+    const config = {
+      game_user_settings: formData.game_user_settings || '',
+      game_ini: formData.game_ini || '',
+      server_args: formData.server_args || { query_params: {}, command_line_args: {}, custom_args: [] },
+      exported_at: new Date().toISOString(),
+    };
+    const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `server-config-${formData.identifier || 'export'}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImportAll = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+      try {
+        const text = await file.text();
+        const config = JSON.parse(text);
+        setFormData((prev) => ({
+          ...prev,
+          game_user_settings: config.game_user_settings || prev.game_user_settings,
+          game_ini: config.game_ini || prev.game_ini,
+          server_args: config.server_args || prev.server_args,
+        }));
+      } catch (err) {
+        console.error('Import failed:', err);
+      }
+    };
+    input.click();
+  };
+
+  const handleDownloadText = (content: string, filename: string) => {
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <Dialog open={show} onOpenChange={onClose}>
@@ -150,21 +199,47 @@ export function ServerEditModal({
                   <Label htmlFor="max_players">{t('maxPlayers')}</Label>
                   <Input id="max_players" name="max_players" type="number" value={formData.max_players || ''} onChange={handleChange} />
                 </div>
+                <div className="flex gap-2 pt-4 border-t">
+                  <Button type="button" variant="outline" size="sm" onClick={handleExportAll}>
+                    <Download className="h-4 w-4 mr-1" />{t('exportAll')}
+                  </Button>
+                  <Button type="button" variant="outline" size="sm" onClick={handleImportAll}>
+                    <Upload className="h-4 w-4 mr-1" />{t('importAll')}
+                  </Button>
+                </div>
               </form>
             </TabsContent>
             <TabsContent value="game_user_settings">
+              <div className="flex justify-end gap-2 mb-2">
+                <Button variant="outline" size="sm" onClick={() => handleDownloadText(formData.game_user_settings || '', 'GameUserSettings.ini')}>
+                  <Download className="h-3 w-3 mr-1" />{t('exportFile')}
+                </Button>
+              </div>
               <GameUserSettingsEditor
                 value={formData.game_user_settings}
                 onChange={(v) => setFormData(p => ({ ...p, game_user_settings: v }))}
               />
             </TabsContent>
             <TabsContent value="game_ini">
+              <div className="flex justify-end gap-2 mb-2">
+                <Button variant="outline" size="sm" onClick={() => handleDownloadText(formData.game_ini || '', 'Game.ini')}>
+                  <Download className="h-3 w-3 mr-1" />{t('exportFile')}
+                </Button>
+              </div>
               <GameIniEditor
                 value={formData.game_ini}
                 onChange={(v) => setFormData(p => ({ ...p, game_ini: v }))}
               />
             </TabsContent>
             <TabsContent value="server_args">
+              <div className="flex justify-end gap-2 mb-2">
+                <Button variant="outline" size="sm" onClick={() => {
+                  const content = JSON.stringify(formData.server_args || { query_params: {}, command_line_args: {}, custom_args: [] }, null, 2);
+                  handleDownloadText(content, 'SERVER_ARGS.json');
+                }}>
+                  <Download className="h-3 w-3 mr-1" />{t('exportFile')}
+                </Button>
+              </div>
               {/* @ts-expect-error: Prop 'value' is not available on type 'IntrinsicAttributes' */}
               <ServerArgsEditor value={formData.server_args} onChange={(v) => setFormData(p => ({ ...p, server_args: v }))} />
             </TabsContent>
