@@ -16,23 +16,26 @@
 - ⬆️ Automatic server files and mod updates on first startup
 - 💾 Automatic creation and management of Docker volumes for game data storage
 - 🖥️ Add and manage multiple ARK servers
-- ⚙️ Configure server settings and configuration parameters
-- ▶️ One-click server start/stop
+- ⚙️ Configure server settings and configuration parameters (GameUserSettings.ini, Game.ini, startup arguments)
+- ▶️ One-click server start/stop/restart
 - 🖼️ Docker image management (pull, update, status check)
 - 🔐 JWT authentication and user management
 - 📝 Complete API documentation (Swagger)
+- 🧩 **Plugin Manager** — file browser with drag-and-drop upload, rename, delete, mkdir
+- 📝 **JSON/INI/Config Editor** — inline modal editor for `.json`, `.ini`, `.txt`, `.cfg`, `.yaml`, `.xml`, `.conf` files
+- 📦 **Zip/Unzip** — auto-extract on upload, manual extract, download folders as ZIP
+- 📋 **Export/Import Config** — export/import all configs (GameUserSettings.ini + Game.ini + server_args) as a single JSON file; individual download/import per tab
+- 🌐 **i18n** — English and Chinese (zh) translations
 
 ### 🚧 Planned Features
 - 🎮 RCON command execution
 - 📊 Server running status monitoring
 - 🎨 Mod management integration with Steam Workshop
-- 🔧 ArkApi plugin management
 - 📋 Server log viewing
 - 💾 Server save and configuration backup
 - 🔍 Tool version update checking
 - ⚡ Optional server files and mod updates
 - 🔄 Container image update functionality
-- 🌐 i18n internationalization support
 - 🔌 MCP (Mod Configuration Protocol) support
 
 ### 🚀 Future Plans
@@ -94,9 +97,17 @@ The application will **refuse to start** if:
 - 8GB+ memory per ARK server (recommended)
 - 10GB+ disk space per ARK server
 
-### 📦 Install 1Panel
-We recommend installing 1Panel on your server to manage the Docker environment
-[1Panel Installation Guide](https://1panel.cn/docs/v2/installation/online_installation/)
+### 🔧 Local Development (Docker)
+
+Build the custom image with both Go backend and Next.js frontend:
+```bash
+git clone https://github.com/21oramaster/ark-commander.git
+cd ark-commander
+docker build -t ark-commander-fixed:latest .
+docker compose up -d
+```
+
+Access the interface at `http://<your-ip>:3000`. Default login: `admin` / `admin123`.
 
 ### 🐳 Docker Containerized Deployment
 
@@ -105,35 +116,25 @@ Copy the docker-compose.yml, or use the following configuration directly:
 version: '3.8'
 
 services:
-  # ARK Server Management System (Frontend + Backend)
   ark-commander:
     image: tbro98/arkservercommander:latest
     container_name: ark-commander
     ports:
-      # You can modify the port mapping
       - "8080:8080"
     environment:
-      # ⚠️ IMPORTANT: Generate a strong secret using: openssl rand -base64 48
       - JWT_SECRET=your-secret-key-here
       - DB_PATH=/data/ark_server.db
       - SERVER_PORT=8080
     volumes:
-      # Database storage
       - ./data:/data
-      # Docker socket (for managing Docker containers)
       - /var/run/docker.sock:/var/run/docker.sock
     restart: unless-stopped
-    # System requires privileged mode to operate host Docker
     privileged: true
-
 ```
 
-# 🚀 Start the service
+```bash
+sudo docker compose up -d
 ```
-sudo docker-compose up -d
-```
-
-🌐 Access the system interface via ip+port
 
 ## 📖 User Guide
 
@@ -145,30 +146,34 @@ sudo docker-compose up -d
 ### 🖥️ Managing Servers
 1. After logging in, click "Server Management"
 2. Click "Add Server" to create a new server configuration
+3. Click the pencil icon to edit a server — configure Basic Parameters, GameUserSettings.ini, Game.ini, and Startup Arguments across 4 tabs
 
-### 🗺️ Supported Maps - Can be extended with custom additions later
-- The Island
-- The Center
-- Scorched Earth
-- Aberration
-- Extinction
-- Valguero
-- Genesis
-- Crystal Isles
-- Genesis 2
-- Lost Island
-- Fjordur
+### 🧩 Plugin Manager
+1. Navigate to "Plugins" in the sidebar
+2. Select a server, then browse, upload, edit, rename, delete, or download plugin files
+3. ZIP files are auto-extracted on upload; use the extract button for existing ZIPs
+4. Use the "Download as ZIP" button to download folders
+
+### 📋 Export/Import Config
+1. Open a server's edit page
+2. Use "Export All Config" to download all settings as JSON
+3. Use "Import All Config" to restore from a previously exported JSON
+4. Individual tabs have their own Download/Import buttons for single-file operations
+
+### 🗺️ Supported Maps
+- The Island, The Center, Scorched Earth, Aberration, Extinction
+- Valguero, Genesis, Genesis 2, Crystal Isles, Lost Island, Fjordur
 
 ## ❓ FAQ
 
 ### ❓ Q: How to backup ARK server data?
-A: Server data backup operations are not yet implemented. Server data is stored in Docker volumes `ark-server-<server_number>`, you can backup manually.
+A: Server data is stored in Docker volumes `ark-server-<server_number>`. You can backup manually or use the Export Config feature for settings.
 
 ### ❓ Q: How to view ARK server logs?
-A: The server program currently cannot output logs directly in docker logs, you need to view the server log files, and we'll see how to optimize this later.
+A: Currently logs need to be viewed inside the container. Log viewing is planned for a future update.
 
 ### ❓ Q: How to update ARK server images?
-A: The system now supports image management features. After logging in, go to the image management page where you can check for updates, pull new images, and update existing images.
+A: Go to the Home page and click "Check Updates" on any server card. The system will compare local vs remote image digests and prompt for update.
 
 ### ❓ Q: What if JWT_SECRET configuration fails?
 A: If the application fails to start with JWT_SECRET errors, ensure:

@@ -16,25 +16,28 @@
 - ⬆️ 第一次启动时自动更新服务端文件和Mod
 - 💾 自动创建和管理Docker卷存储游戏数据
 - 🖥️ 添加和管理多个 ARK 服务器
-- ⚙️ 配置服务器设置和配置参数
-- ▶️ 一键启动/停止服务器
+- ⚙️ 配置服务器设置和配置参数（GameUserSettings.ini、Game.ini、启动参数）
+- ▶️ 一键启动/停止/重启服务器
 - 🖼️ Docker镜像管理（拉取、更新、状态检查）
 - 🔐 JWT认证和用户管理
 - 📝 完整的API文档（Swagger）
+- 🧩 **插件管理器** — 文件浏览器，支持拖拽上传、重命名、删除、创建文件夹
+- 📝 **JSON/INI/配置文件编辑器** — 内联模态编辑器，支持 `.json`、`.ini`、`.txt`、`.cfg`、`.yaml`、`.xml`、`.conf`
+- 📦 **Zip/Unzip** — 上传自动解压、手动解压、文件夹下载为ZIP
+- 📋 **配置导入/导出** — 一键导入导出所有配置（GameUserSettings.ini + Game.ini + server_args）为单个JSON文件；每页标签页支持单独下载/导入
+- 🌐 **i18n 国际化** — 英文和中文
 
 ### 🚧 待实现功能
 - 🎮 RCON 命令执行
 - 📊 服务器运行状态监控
 - 🎨 Mod管理对接steam创意工坊
-- 🔧 ArkApi插件管理
 - 📋 服务器日志查看
 - 💾 服务器存档及配置备份
 - 🔍 工具版本更新检查
 - ⚡ 可选更新服务端文件和Mod
 - 🔄 容器镜像更新功能
-- 🌐 i18n 国际化支持
 - 🔌 MCP 支持
-  
+   
 ### 🚀 未来计划
 - ☸️ 多主机管理，可能基于K8S实现
 - 🌍 服务器收录网站，脱离糟糕的steam搜服
@@ -94,9 +97,17 @@ export JWT_SECRET='your-generated-secret-here'
 - 每个ARK服务器 8GB+ 内存 (推荐)
 - 每个ARK服务器 10GB+ 磁盘空间
 
-### 📦 安装 1Panel
-推荐在服务器上安装1Panel来管理docker环境
-[1Panel安装文档](https://1panel.cn/docs/v2/installation/online_installation/)
+### 🔧 本地开发（Docker）
+
+构建包含 Go 后端和 Next.js 前端的自定义镜像：
+```bash
+git clone https://github.com/21oramaster/ark-commander.git
+cd ark-commander
+docker build -t ark-commander-fixed:latest .
+docker compose up -d
+```
+
+访问地址：`http://<your-ip>:3000`。默认登录：`admin` / `admin123`。
 
 ### 🐳 Docker容器化部署
 
@@ -105,35 +116,25 @@ export JWT_SECRET='your-generated-secret-here'
 version: '3.8'
 
 services:
-  # ARK服务器管理系统 (前后端一体)
   ark-commander:
     image: tbro98/arkservercommander:latest
     container_name: ark-commander
     ports:
-      # 可修改端口映射
       - "8080:8080"
     environment:
-      # ⚠️ 重要：请使用 openssl rand -base64 48 生成强密钥
       - JWT_SECRET=your-secret-key-here
       - DB_PATH=/data/ark_server.db
       - SERVER_PORT=8080
     volumes:
-      # 数据库存储
       - ./data:/data
-      # Docker socket (用于管理Docker容器)
       - /var/run/docker.sock:/var/run/docker.sock
     restart: unless-stopped
-    # 系统需要操作宿主机Docker的特权模式
     privileged: true
-
 ```
 
-# 🚀 启动服务
+```bash
+sudo docker compose up -d
 ```
-sudo docker-compose up -d
-```
-
-🌐 通过 ip+端口，访问系统界面
 
 ## 📖 使用说明
 
@@ -145,30 +146,36 @@ sudo docker-compose up -d
 ### 🖥️ 管理服务器
 1. 登录后点击"服务器管理"
 2. 点击"添加服务器"创建新的服务器配置
+3. 点击铅笔图标编辑服务器 — 在4个标签页中配置基本参数、GameUserSettings.ini、Game.ini 和启动参数
 
-### 🗺️ 支持的地图 - 后续可扩展自定义增加
-- The Island (孤岛)
-- The Center (中心岛)
-- Scorched Earth (焦土)
-- Aberration (畸变)
-- Extinction (灭绝)
-- Valguero (瓦尔盖罗)
-- Genesis (创世纪)
-- Crystal Isles (水晶岛)
-- Genesis 2 (创世纪2)
-- Lost Island (失落岛)
-- Fjordur (峡湾)
+### 🧩 插件管理器
+1. 在侧边栏导航到"插件管理"
+2. 选择服务器，然后浏览、上传、编辑、重命名、删除或下载插件文件
+3. ZIP文件上传时自动解压；使用解压按钮手动解压已有ZIP
+4. 使用"下载为ZIP"按钮下载文件夹
+
+### 📋 配置导入/导出
+1. 打开服务器的编辑页面
+2. 使用"导出所有配置"将所有设置下载为JSON
+3. 使用"导入所有配置"从之前导出的JSON恢复
+4. 每个标签页有单独的下载/导入按钮用于单文件操作
+
+### 🗺️ 支持的地图
+- The Island (孤岛)、The Center (中心岛)、Scorched Earth (焦土)
+- Aberration (畸变)、Extinction (灭绝)、Valguero (瓦尔盖罗)
+- Genesis (创世纪)、Genesis 2 (创世纪2)、Crystal Isles (水晶岛)
+- Lost Island (失落岛)、Fjordur (峡湾)
 
 ## ❓ 常见问题
 
 ### ❓ Q: 如何备份ARK服务器数据？
-A: 暂时还没实现服务器数据的备份操作。服务器数据存储在Docker卷 `ark-server-<服务器编号>` 中，可以自行备份。
+A: 服务器数据存储在Docker卷 `ark-server-<服务器编号>` 中。可以手动备份，或使用导出配置功能备份设置。
 
 ### ❓ Q: 如何查看ARK服务器日志？
-A: 服务端程序目前无法直接在docker的logs中输出，需要查看服务器的日志文件，后续查看该怎么优化。
+A: 目前需要在容器内查看日志。日志查看功能计划在后续更新中实现。
 
 ### ❓ Q: 如何更新ARK服务器镜像？
-A: 系统已支持镜像管理功能。登录后台，进入镜像管理页面，可以检查更新、拉取新镜像和更新现有镜像。
+A: 转到首页，点击服务器卡片上的"检查更新"。系统会比较本地和远程镜像摘要并提示更新。
 
 ### ❓ Q: JWT_SECRET 配置错误怎么办？
 A: 如果应用启动失败并提示 JWT_SECRET 错误，请确保：
