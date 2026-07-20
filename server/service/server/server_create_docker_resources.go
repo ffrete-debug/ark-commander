@@ -34,7 +34,7 @@ func (s *ServerService) createDockerResources(userID uint, server *models.Server
 
 	// 注册回滚操作：删除 Docker 卷
 	dockerRollback.AddAction("volume", volumeName, "删除Docker卷", func() error {
-		return dockerManager.RemoveVolume(volumeName)
+		return dockerManager.RemoveVolume(server.ID)
 	})
 
 	// 步骤2: 处理配置文件

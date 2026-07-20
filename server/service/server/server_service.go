@@ -22,6 +22,35 @@ func NewServerService() *ServerService {
 	return &ServerService{}
 }
 
+// checkPortConflict 检查端口冲突
+// userID: 用户ID
+// serverID: 服务器ID（0 表示新建服务器，更新时传入现有服务器ID）
+// port, queryPort, rconPort: 要检查的端口
+// 返回: 错误信息
+func (s *ServerService) checkPortConflict(userID uint, serverID uint, port, queryPort, rconPort int) error {
+	var existingServers []models.Server
+	query := database.DB.Where("user_id = ?", userID)
+	if serverID > 0 {
+		query = query.Where("id != ?", serverID)
+	}
+	if err := query.Find(&existingServers).Error; err != nil {
+		return fmt.Errorf("检查端口冲突失败: %w", err)
+	}
+
+	for _, existingServer := range existingServers {
+		if existingServer.Port == port {
+			return fmt.Errorf("端口冲突：游戏端口 %d 已被服务器 %s 使用", port, existingServer.SessionName)
+		}
+		if existingServer.QueryPort == queryPort {
+			return fmt.Errorf("端口冲突：查询端口 %d 已被服务器 %s 使用", queryPort, existingServer.SessionName)
+		}
+		if existingServer.RCONPort == rconPort {
+			return fmt.Errorf("端口冲突：RCON端口 %d 已被服务器 %s 使用", rconPort, existingServer.SessionName)
+		}
+	}
+	return nil
+}
+
 // GetServers 获取用户的所有服务器
 func (s *ServerService) GetServers(userID uint) ([]models.ServerResponse, error) {
 	var servers []models.Server
@@ -102,6 +131,11 @@ func (s *ServerService) CreateServer(userID uint, req models.ServerRequest) (*mo
 	if req.AutoRestart == nil {
 		defaultVal := true
 		req.AutoRestart = &defaultVal
+	}
+
+	// 检查端口冲突
+	if err := s.checkPortConflict(userID, 0, req.Port, req.QueryPort, req.RCONPort); err != nil {
+		return nil, err
 	}
 
 	// 开始数据库事务
@@ -193,7 +227,7 @@ func (s *ServerService) CreateServer(userID uint, req models.ServerRequest) (*mo
 
 	// 提交事务
 	if err := tx.Commit().Error; err != nil {
-		dockerManager.RemoveVolume(volumeName)
+		dockerManager.RemoveVolume(server.ID)
 		return nil, fmt.Errorf("数据库提交失败: %w", err)
 	}
 
@@ -394,6 +428,11 @@ func (s *ServerService) UpdateServer(userID uint, serverID string, req models.Se
 			argsChanged = true
 			server.ServerArgsJSON = newArgsJSON
 		}
+	}
+
+	// 检查端口冲突
+	if err := s.checkPortConflict(userID, uint(id), server.Port, server.QueryPort, server.RCONPort); err != nil {
+		return nil, false, err
 	}
 
 	if err := database.DB.Save(&server).Error; err != nil {

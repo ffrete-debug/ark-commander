@@ -32,7 +32,7 @@ func (s *ServerService) createServerContinue(userID uint, server *models.Server,
 
 	// 添加回滚操作：删除 Docker 卷
 	rollback.AddAction("volume", volumeName, "删除Docker卷", func() error {
-		return dockerManager.RemoveVolume(volumeName)
+		return dockerManager.RemoveVolume(server.ID)
 	})
 
 	// 步骤7: 处理配置文件

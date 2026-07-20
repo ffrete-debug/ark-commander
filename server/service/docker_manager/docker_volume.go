@@ -24,7 +24,7 @@ func (dm *DockerManager) CreateVolume(serverID uint) (string, error) {
 	// 创建插件卷
 	if err := dm.createSingleVolume(pluginsVolumeName); err != nil {
 		// 如果插件卷创建失败，清理已创建的游戏数据卷
-		dm.RemoveVolume(volumeName)
+		dm.RemoveVolume(serverID)
 		return "", fmt.Errorf("创建插件卷失败: %v", err)
 	}
 
@@ -62,21 +62,18 @@ func (dm *DockerManager) createSingleVolume(volumeName string) error {
 }
 
 // RemoveVolume 删除Docker卷（包括游戏数据卷和插件卷）
-// volumeName: 游戏数据卷名称
+// serverID: 服务器ID
 // 返回: 错误信息
-func (dm *DockerManager) RemoveVolume(volumeName string) error {
-	// 从游戏数据卷名称推导出插件卷名称
-	// 这里假设volumeName是游戏数据卷名称，需要推导出插件卷名称
-	// 由于当前的设计，我们需要通过serverID来推导，但这里只有volumeName
-	// 所以我们先删除游戏数据卷，然后尝试删除可能的插件卷
+func (dm *DockerManager) RemoveVolume(serverID uint) error {
+	volumeName := utils.GetServerVolumeName(serverID)
+	pluginsVolumeName := utils.GetServerPluginsVolumeName(serverID)
 
 	// 删除游戏数据卷
 	if err := dm.removeSingleVolume(volumeName); err != nil {
 		return err
 	}
 
-	// 尝试删除插件卷（通过替换卷名称）
-	pluginsVolumeName := volumeName + "-plugins"
+	// 删除插件卷
 	if err := dm.removeSingleVolume(pluginsVolumeName); err != nil {
 		// 插件卷删除失败不影响主流程，只记录警告
 		utils.Warn("删除插件卷失败", zap.String("volume", pluginsVolumeName), zap.Error(err))
