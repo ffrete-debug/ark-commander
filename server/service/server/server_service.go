@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"sync"
 	"time"
 
 	"ark-server-commander/database"
@@ -15,11 +16,19 @@ import (
 )
 
 // ServerService 服务器管理业务逻辑服务
-type ServerService struct{}
+type ServerService struct {
+	userMutexes sync.Map // map[uint]*sync.Mutex por userID
+}
 
 // NewServerService 创建服务器服务实例
 func NewServerService() *ServerService {
 	return &ServerService{}
+}
+
+// getUserMutex 获取用户级别的互斥锁，确保同一用户的服务器操作串行执行
+func (s *ServerService) getUserMutex(userID uint) *sync.Mutex {
+	mu, _ := s.userMutexes.LoadOrStore(userID, &sync.Mutex{})
+	return mu.(*sync.Mutex)
 }
 
 // checkPortConflict 检查端口冲突
@@ -115,6 +124,10 @@ func (s *ServerService) GetServers(userID uint) ([]models.ServerResponse, error)
 
 // CreateServer 创建新服务器
 func (s *ServerService) CreateServer(userID uint, req models.ServerRequest) (*models.ServerResponse, error) {
+	mu := s.getUserMutex(userID)
+	mu.Lock()
+	defer mu.Unlock()
+
 	// 检查服务器标识是否已存在
 	var existingServer models.Server
 	if err := database.DB.Where("identifier = ? AND user_id = ?", req.Identifier, userID).First(&existingServer).Error; err == nil {
@@ -366,8 +379,13 @@ func (s *ServerService) GetServerRCON(userID uint, serverID string) (map[string]
 	}, nil
 }
 
-// UpdateServer 更新服务器配置
+// UpdateServer 更新服务器
 func (s *ServerService) UpdateServer(userID uint, serverID string, req models.ServerUpdateRequest) (*models.ServerResponse, bool, error) {
+	mu := s.getUserMutex(userID)
+	mu.Lock()
+	defer mu.Unlock()
+
+	// 将serverID转换为uint
 	id, err := strconv.ParseUint(serverID, 10, 32)
 	if err != nil {
 		return nil, false, fmt.Errorf("无效的服务器ID")
@@ -504,6 +522,11 @@ func (s *ServerService) UpdateServer(userID uint, serverID string, req models.Se
 
 // DeleteServer 删除服务器
 func (s *ServerService) DeleteServer(userID uint, serverID string) error {
+	mu := s.getUserMutex(userID)
+	mu.Lock()
+	defer mu.Unlock()
+
+	// 将serverID转换为uint
 	id, err := strconv.ParseUint(serverID, 10, 32)
 	if err != nil {
 		return fmt.Errorf("无效的服务器ID")
@@ -544,6 +567,11 @@ func (s *ServerService) DeleteServer(userID uint, serverID string) error {
 
 // StartServer 启动服务器
 func (s *ServerService) StartServer(userID uint, serverID string) error {
+	mu := s.getUserMutex(userID)
+	mu.Lock()
+	defer mu.Unlock()
+
+	// 将serverID转换为uint
 	id, err := strconv.ParseUint(serverID, 10, 32)
 	if err != nil {
 		return fmt.Errorf("无效的服务器ID")
@@ -681,6 +709,11 @@ func (s *ServerService) startServerAsync(server models.Server, dockerManager *do
 
 // StopServer 停止服务器
 func (s *ServerService) StopServer(userID uint, serverID string) error {
+	mu := s.getUserMutex(userID)
+	mu.Lock()
+	defer mu.Unlock()
+
+	// 将serverID转换为uint
 	id, err := strconv.ParseUint(serverID, 10, 32)
 	if err != nil {
 		return fmt.Errorf("无效的服务器ID")
@@ -893,8 +926,13 @@ func (s *ServerService) GetAffectedServers(imageName string, userID uint) ([]mod
 	return []models.ServerResponse{}, nil
 }
 
-// RecreateContainer 重建指定服务器的容器
+// RecreateContainer 重建容器
 func (s *ServerService) RecreateContainer(userID uint, serverID string) error {
+	mu := s.getUserMutex(userID)
+	mu.Lock()
+	defer mu.Unlock()
+
+	// 将serverID转换为uint
 	id, err := strconv.ParseUint(serverID, 10, 32)
 	if err != nil {
 		return fmt.Errorf("无效的服务器ID")
