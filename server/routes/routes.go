@@ -59,6 +59,8 @@ func RegisterRoutes(r *gin.Engine) {
 			authRoutes.GET("/check-init", auth.CheckInit)
 			authRoutes.POST("/init", auth.InitUser)
 			authRoutes.POST("/login", auth.Login)
+			authRoutes.POST("/refresh", auth.RefreshToken)
+			authRoutes.POST("/logout", auth.Logout)
 		}
 
 		// 需要认证的路由

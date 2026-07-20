@@ -2,6 +2,8 @@ package auth
 
 import (
 	"net/http"
+	"strings"
+	"time"
 
 	"ark-server-commander/database"
 	"ark-server-commander/models"
@@ -9,6 +11,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 )
+
+type RefreshTokenRequest struct {
+	RefreshToken string `json:"refresh_token" binding:"required"`
+}
 
 // CheckInit 检查是否已初始化用户
 // @Summary 检查系统初始化状态
@@ -127,13 +133,104 @@ func Login(c *gin.Context) {
 		return
 	}
 
+	// 生成refresh token
+	refreshToken, err := utils.GenerateRefreshToken(user.ID, user.Username)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "刷新令牌生成失败"})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
-		"message": "登录成功",
-		"token":   token,
+		"message":       "登录成功",
+		"token":         token,
+		"refresh_token": refreshToken,
 		"user": models.UserResponse{
 			ID:       user.ID,
 			Username: user.Username,
 		},
+	})
+}
+
+// RefreshToken 刷新访问令牌
+// @Summary 刷新JWT令牌
+// @Description 使用refresh_token获取新的access_token和refresh_token
+// @Tags 认证
+// @Accept json
+// @Produce json
+// @Param request body RefreshTokenRequest true "刷新令牌请求"
+// @Success 200 {object} map[string]interface{} "刷新成功"
+// @Failure 400 {object} map[string]string "请求错误"
+// @Failure 401 {object} map[string]string "令牌无效"
+// @Router /auth/refresh [post]
+func RefreshToken(c *gin.Context) {
+	var req RefreshTokenRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "请求参数错误"})
+		return
+	}
+
+	// 解析refresh token
+	claims, err := utils.ParseToken(req.RefreshToken)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "无效的刷新令牌"})
+		return
+	}
+
+	// 将旧refresh token加入黑名单
+	utils.BlacklistToken(req.RefreshToken, time.Now().Add(24*time.Hour))
+
+	// 生成新的access token和refresh token
+	accessToken, err := utils.GenerateToken(claims.UserID, claims.Username)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "令牌生成失败"})
+		return
+	}
+
+	newRefreshToken, err := utils.GenerateRefreshToken(claims.UserID, claims.Username)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "刷新令牌生成失败"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":       "令牌刷新成功",
+		"token":         accessToken,
+		"refresh_token": newRefreshToken,
+		"user": models.UserResponse{
+			ID:       claims.UserID,
+			Username: claims.Username,
+		},
+	})
+}
+
+// Logout 用户登出
+// @Summary 用户登出
+// @Description 将当前JWT令牌加入黑名单
+// @Tags 认证
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Success 200 {object} map[string]string "登出成功"
+// @Failure 401 {object} map[string]string "未授权"
+// @Router /auth/logout [post]
+func Logout(c *gin.Context) {
+	authHeader := c.GetHeader("Authorization")
+	if authHeader == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "未提供授权令牌"})
+		return
+	}
+
+	parts := strings.SplitN(authHeader, " ", 2)
+	if !(len(parts) == 2 && parts[0] == "Bearer") {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "授权令牌格式错误"})
+		return
+	}
+
+	// 将当前token加入黑名单
+	utils.BlacklistToken(parts[1], time.Now().Add(24*time.Hour))
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "登出成功",
 	})
 }
 
