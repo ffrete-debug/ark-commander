@@ -184,7 +184,7 @@ func (s *ServerService) CreateServer(userID uint, req models.ServerRequest) (*mo
 		return nil, fmt.Errorf("获取Docker管理器失败: %w", err)
 	}
 
-	volumeName, err := dockerManager.CreateVolume(server.ID)
+	_, err = dockerManager.CreateVolume(server.ID)
 	if err != nil {
 		tx.Rollback()
 		return nil, fmt.Errorf("创建Docker卷失败: %w", err)
