@@ -3,6 +3,7 @@ package main
 import (
 	"ark-server-commander/config"
 	"ark-server-commander/database"
+	"ark-server-commander/middleware"
 	"ark-server-commander/routes"
 	"ark-server-commander/service/docker_manager"
 	"ark-server-commander/service/update"
@@ -64,6 +65,9 @@ func main() {
 
 	// 初始化数据库
 	database.InitDB()
+
+	// 初始化审计日志
+	middleware.InitAudit(database.GetDB())
 
 	// 初始化更新监控 Hub
 	updateHub := websocket.NewHub()

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"ark-server-commander/database"
+	"ark-server-commander/middleware"
 	"ark-server-commander/models"
 	"ark-server-commander/utils"
 
@@ -84,6 +85,8 @@ func InitUser(c *gin.Context) {
 		return
 	}
 
+	middleware.Log.Log(user.ID, "auth.init", "user", user.Username, c.ClientIP())
+
 	c.JSON(http.StatusOK, gin.H{
 		"message": "初始化成功",
 		"token":   token,
@@ -93,6 +96,7 @@ func InitUser(c *gin.Context) {
 		},
 	})
 }
+
 
 // Login 用户登录
 // @Summary 用户登录
@@ -139,6 +143,8 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "刷新令牌生成失败"})
 		return
 	}
+
+	middleware.Log.Log(user.ID, "auth.login", "user", user.Username, c.ClientIP())
 
 	c.JSON(http.StatusOK, gin.H{
 		"message":       "登录成功",
@@ -192,6 +198,8 @@ func RefreshToken(c *gin.Context) {
 		return
 	}
 
+	middleware.Log.Log(claims.UserID, "auth.refresh", "token", "", c.ClientIP())
+
 	c.JSON(http.StatusOK, gin.H{
 		"message":       "令牌刷新成功",
 		"token":         accessToken,
@@ -228,6 +236,8 @@ func Logout(c *gin.Context) {
 
 	// 将当前token加入黑名单
 	utils.BlacklistToken(parts[1], time.Now().Add(24*time.Hour))
+
+	middleware.Log.Log(c.GetUint("user_id"), "auth.logout", "token", parts[1], c.ClientIP())
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "登出成功",

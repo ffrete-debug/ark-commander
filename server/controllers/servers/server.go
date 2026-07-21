@@ -1,9 +1,11 @@
 package servers
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
+	"ark-server-commander/middleware"
 	"ark-server-commander/models"
 	"ark-server-commander/service/server"
 	"ark-server-commander/utils"
@@ -29,7 +31,7 @@ func GetServers(c *gin.Context) {
 
 	serverResponses, err := serverService.GetServers(userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.InternalError(c, "服务器内部错误", err.Error())
 		return
 	}
 
@@ -57,28 +59,30 @@ func CreateServer(c *gin.Context) {
 
 	var req models.ServerRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "请求参数错误"})
+		utils.BadRequest(c, "请求参数错误", "")
 		return
 	}
 
 	if req.GameUserSettings != "" {
 		if err := utils.ValidateINIContent(req.GameUserSettings); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "GameUserSettings.ini 格式错误: " + err.Error()})
+			utils.BadRequest(c, "GameUserSettings.ini 格式错误", err.Error())
 			return
 		}
 	}
 	if req.GameIni != "" {
 		if err := utils.ValidateINIContent(req.GameIni); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Game.ini 格式错误: " + err.Error()})
+			utils.BadRequest(c, "Game.ini 格式错误", err.Error())
 			return
 		}
 	}
 
 	response, err := serverService.CreateServer(userID, req)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.InternalError(c, "服务器内部错误", err.Error())
 		return
 	}
+
+	middleware.Log.Log(userID, "server.create", fmt.Sprintf("server:%d", response.ID), response.SessionName, c.ClientIP())
 
 	c.JSON(http.StatusCreated, gin.H{
 		"message": "服务器创建成功",
@@ -106,14 +110,14 @@ func GetServer(c *gin.Context) {
 	response, err := serverService.GetServer(userID, serverID)
 	if err != nil {
 		if err.Error() == "无效的服务器ID" {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			utils.BadRequest(c, "请求参数错误", err.Error())
 			return
 		}
 		if err.Error() == "服务器不存在" {
-			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			utils.NotFound(c, "未找到资源", err.Error())
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.InternalError(c, "服务器内部错误", err.Error())
 		return
 	}
 
@@ -143,14 +147,14 @@ func GetServerRCON(c *gin.Context) {
 	data, err := serverService.GetServerRCON(userID, serverID)
 	if err != nil {
 		if err.Error() == "无效的服务器ID" {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			utils.BadRequest(c, "请求参数错误", err.Error())
 			return
 		}
 		if err.Error() == "服务器不存在" {
-			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			utils.NotFound(c, "未找到资源", err.Error())
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.InternalError(c, "服务器内部错误", err.Error())
 		return
 	}
 
@@ -187,14 +191,14 @@ func GetServerLogs(c *gin.Context) {
 	data, err := serverService.GetServerLogs(userID, serverID, tail)
 	if err != nil {
 		if err.Error() == "无效的服务器ID" {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			utils.BadRequest(c, "请求参数错误", err.Error())
 			return
 		}
 		if err.Error() == "服务器不存在" {
-			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			utils.NotFound(c, "未找到资源", err.Error())
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.InternalError(c, "服务器内部错误", err.Error())
 		return
 	}
 
@@ -225,19 +229,19 @@ func UpdateServer(c *gin.Context) {
 
 	var req models.ServerUpdateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "请求参数错误"})
+		utils.BadRequest(c, "请求参数错误", "")
 		return
 	}
 
 	if req.GameUserSettings != "" {
 		if err := utils.ValidateINIContent(req.GameUserSettings); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "GameUserSettings.ini 格式错误: " + err.Error()})
+			utils.BadRequest(c, "GameUserSettings.ini 格式错误", err.Error())
 			return
 		}
 	}
 	if req.GameIni != "" {
 		if err := utils.ValidateINIContent(req.GameIni); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Game.ini 格式错误: " + err.Error()})
+			utils.BadRequest(c, "Game.ini 格式错误", err.Error())
 			return
 		}
 	}
@@ -245,18 +249,18 @@ func UpdateServer(c *gin.Context) {
 	response, argsChanged, err := serverService.UpdateServer(userID, serverID, req)
 	if err != nil {
 		if err.Error() == "无效的服务器ID" {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			utils.BadRequest(c, "请求参数错误", err.Error())
 			return
 		}
 		if err.Error() == "服务器不存在" {
-			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			utils.NotFound(c, "未找到资源", err.Error())
 			return
 		}
 		if err.Error() == "服务器标识已存在" {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			utils.BadRequest(c, "请求参数错误", err.Error())
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.InternalError(c, "服务器内部错误", err.Error())
 		return
 	}
 
@@ -265,6 +269,7 @@ func UpdateServer(c *gin.Context) {
 	if argsChanged && response.Status == "running" {
 		message = "服务器更新成功，启动参数已修改。由于服务器正在运行，需要重启服务器以应用新的启动参数。"
 	}
+	middleware.Log.Log(userID, "server.update", fmt.Sprintf("server:%s", serverID), "", c.ClientIP())
 
 	c.JSON(http.StatusOK, gin.H{
 		"message":      message,
@@ -294,18 +299,18 @@ func DeleteServer(c *gin.Context) {
 	err := serverService.DeleteServer(userID, serverID)
 	if err != nil {
 		if err.Error() == "无效的服务器ID" {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			utils.BadRequest(c, "请求参数错误", err.Error())
 			return
 		}
 		if err.Error() == "服务器不存在" {
-			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			utils.NotFound(c, "未找到资源", err.Error())
 			return
 		}
 		if err.Error() == "无法删除正在运行的服务器，请先停止服务器" {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			utils.BadRequest(c, "请求参数错误", err.Error())
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.InternalError(c, "服务器内部错误", err.Error())
 		return
 	}
 
@@ -335,20 +340,21 @@ func StartServer(c *gin.Context) {
 	err := serverService.StartServer(userID, serverID)
 	if err != nil {
 		if err.Error() == "无效的服务器ID" {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			utils.BadRequest(c, "请求参数错误", err.Error())
 			return
 		}
 		if err.Error() == "服务器不存在" {
-			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			utils.NotFound(c, "未找到资源", err.Error())
 			return
 		}
 		if err.Error() == "服务器已在运行中" || err.Error() == "服务器正在启动中" {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			utils.BadRequest(c, "请求参数错误", err.Error())
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.InternalError(c, "服务器内部错误", err.Error())
 		return
 	}
+	middleware.Log.Log(userID, "server.start", fmt.Sprintf("server:%s", serverID), "", c.ClientIP())
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "服务器启动命令已发送",
@@ -376,20 +382,21 @@ func StopServer(c *gin.Context) {
 	err := serverService.StopServer(userID, serverID)
 	if err != nil {
 		if err.Error() == "无效的服务器ID" {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			utils.BadRequest(c, "请求参数错误", err.Error())
 			return
 		}
 		if err.Error() == "服务器不存在" {
-			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			utils.NotFound(c, "未找到资源", err.Error())
 			return
 		}
 		if err.Error() == "服务器已经停止" || err.Error() == "服务器正在停止中" {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			utils.BadRequest(c, "请求参数错误", err.Error())
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.InternalError(c, "服务器内部错误", err.Error())
 		return
 	}
+	middleware.Log.Log(userID, "server.stop", fmt.Sprintf("server:%s", serverID), "", c.ClientIP())
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "服务器停止命令已发送",
@@ -417,16 +424,17 @@ func RecreateContainer(c *gin.Context) {
 	err := serverService.RecreateContainer(userID, serverID)
 	if err != nil {
 		if err.Error() == "无效的服务器ID" {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			utils.BadRequest(c, "请求参数错误", err.Error())
 			return
 		}
 		if err.Error() == "服务器不存在" {
-			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			utils.NotFound(c, "未找到资源", err.Error())
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.InternalError(c, "服务器内部错误", err.Error())
 		return
 	}
+	middleware.Log.Log(userID, "server.recreate", fmt.Sprintf("server:%s", serverID), "", c.ClientIP())
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "容器重建已开始",
@@ -454,20 +462,21 @@ func RestartServer(c *gin.Context) {
 	// stop first
 	if err := serverService.StopServer(userID, serverID); err != nil {
 		if err.Error() == "无效的服务器ID" {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			utils.BadRequest(c, "请求参数错误", err.Error())
 			return
 		}
 		if err.Error() == "服务器不存在" {
-			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			utils.NotFound(c, "未找到资源", err.Error())
 			return
 		}
 		// ignore "already stopped" errors
 	}
 	// then start
 	if err := serverService.StartServer(userID, serverID); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.InternalError(c, "服务器内部错误", err.Error())
 		return
 	}
+	middleware.Log.Log(userID, "server.restart", fmt.Sprintf("server:%s", serverID), "", c.ClientIP())
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "服务器重启命令已发送",
