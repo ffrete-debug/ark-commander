@@ -5,7 +5,9 @@ import (
 	"ark-server-commander/database"
 	"ark-server-commander/routes"
 	"ark-server-commander/service/docker_manager"
+	"ark-server-commander/service/update"
 	"ark-server-commander/utils"
+	"ark-server-commander/websocket"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -63,6 +65,13 @@ func main() {
 	// 初始化数据库
 	database.InitDB()
 
+	// 初始化更新监控 Hub
+	updateHub := websocket.NewHub()
+	go updateHub.Run()
+
+	// 初始化更新服务
+	updateService := update.NewUpdateService(database.GetDB(), updateHub)
+
 	// 检查Docker环境
 	if err := docker_manager.CheckDockerStatus(); err != nil {
 		utils.Fatal("Docker环境检查失败，请确保Docker已安装并运行", zap.Error(err))
@@ -96,7 +105,7 @@ func main() {
 	})
 
 	// 注册路由
-	routes.RegisterRoutes(r)
+	routes.RegisterRoutes(r, updateService, updateHub)
 
 	// 添加Swagger路由
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

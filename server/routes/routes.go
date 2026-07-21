@@ -9,11 +9,14 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 
+	"ark-server-commander/service/update"
+	"ark-server-commander/websocket"
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterRoutes(r *gin.Engine) {
+func RegisterRoutes(r *gin.Engine, updateService *update.UpdateService, hub *websocket.Hub) {
 	// 添加健康检查端点（需要日志）
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{"status": "ok", "message": "服务器运行正常"})
@@ -82,7 +85,7 @@ func RegisterRoutes(r *gin.Engine) {
 				serverRoutes.POST("/:id/restart", servers.RestartServer)
 				serverRoutes.POST("/:id/recreate", servers.RecreateContainer)
 				serverRoutes.GET("/:id/rcon", servers.GetServerRCON)
-		serverRoutes.GET("/:id/logs", servers.GetServerLogs)
+				serverRoutes.GET("/:id/logs", servers.GetServerLogs)
 			}
 
 			// 镜像管理路由
@@ -109,6 +112,32 @@ func RegisterRoutes(r *gin.Engine) {
 				pluginRoutes.POST("/unzip", plugins.UnzipFile)
 				pluginRoutes.GET("/zip-download", plugins.ZipDownload)
 			}
+
+			// 更新状态路由（Issue #3）
+			updateRoutes := api.Group("/updates")
+			{
+				updateRoutes.GET("/:id/status", func(c *gin.Context) {
+					serverID, err := strconv.ParseUint(c.Param("id"), 10, 32)
+					if err != nil {
+						c.JSON(http.StatusBadRequest, gin.H{"error": "无效的服务器ID"})
+						return
+					}
+
+					status, err := updateService.GetUpdateStatus(uint(serverID))
+					if err != nil {
+						c.JSON(http.StatusNotFound, gin.H{"error": "更新状态不存在"})
+						return
+					}
+
+					c.JSON(http.StatusOK, gin.H{
+						"message": "获取成功",
+						"data":    status,
+					})
+				})
+			}
+
+			// WebSocket 更新推送
+			r.GET("/ws/updates/:id", hub.HandleWebSocket)
 		}
 	}
 }
