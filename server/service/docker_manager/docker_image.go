@@ -45,13 +45,29 @@ type ImageStatus struct {
 	Layers       map[string]*LayerStatus `json:"layers"`        // 所有层级的状态
 }
 
-// 全局镜像状态管理
-var (
-	imagePullStatus       = make(map[string]bool)                    // 记录镜像是否正在拉取
-	imagePullCurrentLayer = make(map[string]string)                  // 记录当前下载的层级
-	imagePullLayers       = make(map[string]map[string]*LayerStatus) // 记录所有层级的状态
-	imagePullMutex        sync.RWMutex
-)
+// imagePullState 单镜像拉取状态
+type imagePullState struct {
+	pulling      bool
+	currentLayer string
+	layers       map[string]*LayerStatus
+	mu           sync.RWMutex
+}
+
+// 全局镜像状态管理（按镜像隔离）
+var imagePullStates = &sync.Map{} // map[string]*imagePullState
+
+func getImagePullState(imageName string) *imagePullState {
+	if v, ok := imagePullStates.Load(imageName); ok {
+		return v.(*imagePullState)
+	}
+	state := &imagePullState{layers: make(map[string]*LayerStatus)}
+	imagePullStates.Store(imageName, state)
+	return state
+}
+
+func cleanupImagePullState(imageName string) {
+	imagePullStates.Delete(imageName)
+}
 
 // PullImageWithProgress 拉取Docker镜像并显示进度
 // imageName: 镜像名称
@@ -59,20 +75,22 @@ var (
 func (dm *DockerManager) PullImageWithProgress(imageName string) error {
 	utils.Info("开始拉取Docker镜像", zap.String("image", imageName))
 
-	// 设置拉取状态
-	imagePullMutex.Lock()
-	imagePullStatus[imageName] = true
-	imagePullCurrentLayer[imageName] = ""
-	imagePullLayers[imageName] = make(map[string]*LayerStatus)
-	imagePullMutex.Unlock()
+	state := getImagePullState(imageName)
+	state.mu.Lock()
+	state.pulling = true
+	state.currentLayer = ""
+	state.layers = make(map[string]*LayerStatus)
+	state.mu.Unlock()
 
 	// 确保在函数结束时清理状态
 	defer func() {
-		imagePullMutex.Lock()
-		imagePullStatus[imageName] = false
-		delete(imagePullCurrentLayer, imageName)
-		delete(imagePullLayers, imageName)
-		imagePullMutex.Unlock()
+		state := getImagePullState(imageName)
+		state.mu.Lock()
+		state.pulling = false
+		state.currentLayer = ""
+		state.layers = make(map[string]*LayerStatus)
+		state.mu.Unlock()
+		cleanupImagePullState(imageName)
 	}()
 
 	// 拉取镜像
@@ -98,17 +116,17 @@ func (dm *DockerManager) PullImageWithProgress(imageName string) error {
 
 				var progressInfo ImagePullProgress
 				if err := json.Unmarshal([]byte(line), &progressInfo); err == nil {
-					// 更新进度信息
-					imagePullMutex.Lock()
+					state := getImagePullState(imageName)
+					state.mu.Lock()
 
 					// 处理层级信息
 					layerID := progressInfo.ID
 					if layerID != "" {
-						imagePullCurrentLayer[imageName] = layerID
+						state.currentLayer = layerID
 
 						// 确保层级存在
-						if imagePullLayers[imageName][layerID] == nil {
-							imagePullLayers[imageName][layerID] = &LayerStatus{
+						if state.layers[layerID] == nil {
+							state.layers[layerID] = &LayerStatus{
 								ID:       layerID,
 								Size:     0,
 								Progress: 0,
@@ -119,41 +137,41 @@ func (dm *DockerManager) PullImageWithProgress(imageName string) error {
 						// 更新层级大小信息
 						if progressInfo.ProgressDetail != nil {
 							if progressInfo.ProgressDetail.Total > 0 {
-								imagePullLayers[imageName][layerID].Size = progressInfo.ProgressDetail.Total
+								state.layers[layerID].Size = progressInfo.ProgressDetail.Total
 							}
 							if progressInfo.ProgressDetail.Current > 0 {
-								imagePullLayers[imageName][layerID].Progress = progressInfo.ProgressDetail.Current
+								state.layers[layerID].Progress = progressInfo.ProgressDetail.Current
 							}
 						}
 
 						// 如果ProgressDetail中没有大小信息，尝试从Progress字符串中解析
-						if imagePullLayers[imageName][layerID].Size == 0 && progressInfo.Progress != "" {
+						if state.layers[layerID].Size == 0 && progressInfo.Progress != "" {
 							if size := parseSizeFromProgress(progressInfo.Progress); size > 0 {
-								imagePullLayers[imageName][layerID].Size = size
+								state.layers[layerID].Size = size
 							}
 						}
 
 						// 更新层级状态
 						if strings.Contains(progressInfo.Status, "Downloading") {
-							imagePullLayers[imageName][layerID].Status = "downloading"
+							state.layers[layerID].Status = "downloading"
 						} else if strings.Contains(progressInfo.Status, "Extracting") {
-							imagePullLayers[imageName][layerID].Status = "extracting"
+							state.layers[layerID].Status = "extracting"
 						} else if strings.Contains(progressInfo.Status, "Verifying") {
-							imagePullLayers[imageName][layerID].Status = "verifying"
+							state.layers[layerID].Status = "verifying"
 						} else if strings.Contains(progressInfo.Status, "Pull complete") || strings.Contains(progressInfo.Status, "complete") {
-							imagePullLayers[imageName][layerID].Status = "complete"
+							state.layers[layerID].Status = "complete"
 							// 完成时，如果没有大小信息，设置一个默认值
-							if imagePullLayers[imageName][layerID].Size == 0 {
-								imagePullLayers[imageName][layerID].Size = imagePullLayers[imageName][layerID].Progress
-								if imagePullLayers[imageName][layerID].Size == 0 {
-									imagePullLayers[imageName][layerID].Size = 1024 * 1024 // 默认1MB
+							if state.layers[layerID].Size == 0 {
+								state.layers[layerID].Size = state.layers[layerID].Progress
+								if state.layers[layerID].Size == 0 {
+									state.layers[layerID].Size = 1024 * 1024 // 默认1MB
 								}
 							}
-							imagePullLayers[imageName][layerID].Progress = imagePullLayers[imageName][layerID].Size
+							state.layers[layerID].Progress = state.layers[layerID].Size
 						}
 					}
 
-					imagePullMutex.Unlock()
+					state.mu.Unlock()
 
 					// 打印进度到控制台
 					if strings.Contains(progressInfo.Status, "Downloading") || strings.Contains(progressInfo.Status, "Extracting") {
@@ -218,13 +236,14 @@ func (dm *DockerManager) GetImageStatus(imageName string) *ImageStatus {
 	}
 
 	// 检查是否正在拉取中
-	imagePullMutex.RLock()
-	status.Pulling = imagePullStatus[imageName]
+	state := getImagePullState(imageName)
+	state.mu.RLock()
+	status.Pulling = state.pulling
 	if status.Pulling {
-		status.CurrentLayer = imagePullCurrentLayer[imageName]
+		status.CurrentLayer = state.currentLayer
 
 		// 复制层级状态
-		if layers, exists := imagePullLayers[imageName]; exists {
+		if layers := state.layers; layers != nil {
 			for layerID, layerStatus := range layers {
 				status.Layers[layerID] = &LayerStatus{
 					ID:       layerStatus.ID,
@@ -235,16 +254,18 @@ func (dm *DockerManager) GetImageStatus(imageName string) *ImageStatus {
 			}
 		}
 	}
-	imagePullMutex.RUnlock()
+	state.mu.RUnlock()
 
 	return status
 }
 
 // IsImagePulling 检查镜像是否正在拉取中
 func IsImagePulling(imageName string) bool {
-	imagePullMutex.RLock()
-	defer imagePullMutex.RUnlock()
-	return imagePullStatus[imageName]
+	state := getImagePullState(imageName)
+	state.mu.RLock()
+	pulling := state.pulling
+	state.mu.RUnlock()
+	return pulling
 }
 
 // WaitForImage 等待镜像拉取完成（已废弃，请使用 GetImageStatus）
@@ -267,7 +288,11 @@ func (dm *DockerManager) WaitForImage(imageName string, timeout int) (bool, erro
 		}
 
 		// 检查是否正在拉取中
-		if IsImagePulling(imageName) {
+		state := getImagePullState(imageName)
+		state.mu.RLock()
+		pulling := state.pulling
+		state.mu.RUnlock()
+		if pulling {
 			utils.Debug("镜像正在拉取中，继续等待", zap.String("image", imageName))
 		}
 
@@ -483,6 +508,5 @@ func parseSizeString(sizeStr string) int64 {
 	if size, err := strconv.ParseFloat(sizeStr, 64); err == nil {
 		return int64(size * float64(multiplier))
 	}
-
 	return 0
 }
