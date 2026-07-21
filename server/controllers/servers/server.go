@@ -6,6 +6,7 @@ import (
 
 	"ark-server-commander/models"
 	"ark-server-commander/service/server"
+	"ark-server-commander/utils"
 
 	"github.com/gin-gonic/gin"
 )
@@ -58,6 +59,19 @@ func CreateServer(c *gin.Context) {
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "请求参数错误"})
 		return
+	}
+
+	if req.GameUserSettings != "" {
+		if err := utils.ValidateINIContent(req.GameUserSettings); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "GameUserSettings.ini 格式错误: " + err.Error()})
+			return
+		}
+	}
+	if req.GameIni != "" {
+		if err := utils.ValidateINIContent(req.GameIni); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Game.ini 格式错误: " + err.Error()})
+			return
+		}
 	}
 
 	response, err := serverService.CreateServer(userID, req)
@@ -213,6 +227,19 @@ func UpdateServer(c *gin.Context) {
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "请求参数错误"})
 		return
+	}
+
+	if req.GameUserSettings != "" {
+		if err := utils.ValidateINIContent(req.GameUserSettings); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "GameUserSettings.ini 格式错误: " + err.Error()})
+			return
+		}
+	}
+	if req.GameIni != "" {
+		if err := utils.ValidateINIContent(req.GameIni); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Game.ini 格式错误: " + err.Error()})
+			return
+		}
 	}
 
 	response, argsChanged, err := serverService.UpdateServer(userID, serverID, req)
