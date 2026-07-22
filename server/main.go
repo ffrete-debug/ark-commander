@@ -102,6 +102,9 @@ func main() {
 	// Recovery
 	r.Use(gin.Recovery())
 
+	// Security headers
+	r.Use(middleware.SecureHeaders())
+
 	// Rate limiter: 100 requests/IP/second, burst 200
 	rl := middleware.NewRateLimiter(100, 200, time.Second)
 	r.Use(rl.Middleware())
