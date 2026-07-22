@@ -99,6 +99,19 @@ func main() {
 	// Request ID per request
 	r.Use(middleware.RequestID())
 
+	// Logger
+	r.Use(func(c *gin.Context) {
+		reqID := c.GetString("request_id")
+		zap.L().Info("request",
+			zap.String("method", c.Request.Method),
+			zap.String("path", c.Request.URL.Path),
+			zap.Int("status", c.Writer.Status()),
+			zap.String("request_id", reqID),
+			zap.String("ip", c.ClientIP()),
+		)
+		c.Next()
+	})
+
 	// Recovery
 	r.Use(gin.Recovery())
 
