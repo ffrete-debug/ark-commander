@@ -7,9 +7,14 @@ import { ServerCard } from '@/components/servers/ServerCard';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ClosableAlert } from '@/components/ui/closable-alert';
-import { Plus, Loader2, Server as ServerIcon, AlertCircle } from 'lucide-react';
+import { Plus, Loader2, Server as ServerIcon, AlertCircle, FileText, ChevronDown } from 'lucide-react';
 import { Server } from '@/stores/servers';
 import { useTranslations } from 'next-intl';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 
 export default function ServersPage() {
   const t = useTranslations('servers');
@@ -66,10 +71,44 @@ export default function ServersPage() {
       <div className="mb-6">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">{t('title')}</h1>
-          <Button onClick={handleAddServer} disabled={!imageStatus?.can_create_server}>
-            <Plus className="mr-2 h-4 w-4" />
-            {t('addServer')}
-          </Button>
+          <div className="flex items-center gap-2">
+            {servers.length > 0 && (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <FileText className="mr-2 h-4 w-4" />
+                    {t('serverLogs')}
+                    <ChevronDown className="ml-1 h-3 w-3" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-56 p-1" align="end">
+                  <div className="text-xs font-medium text-gray-500 px-2 py-1.5">{t('title')}</div>
+                  {servers.length === 0 ? (
+                    <div className="text-xs text-gray-400 px-2 py-2">{t('noServers')}</div>
+                  ) : (
+                    servers.map((s) => (
+                      <button
+                        key={s.id}
+                        onClick={() => handleViewLogs(s)}
+                        className="w-full text-left px-2 py-1.5 text-sm rounded hover:bg-gray-100 flex items-center justify-between"
+                      >
+                        <span className="truncate">{s.session_name || s.identifier}</span>
+                        <span className={`text-xs px-1.5 py-0.5 rounded ${
+                          s.status === 'running' ? 'bg-green-100 text-green-700' :
+                          s.status === 'stopped' ? 'bg-red-100 text-red-700' :
+                          'bg-yellow-100 text-yellow-700'
+                        }`}>{s.status}</span>
+                      </button>
+                    ))
+                  )}
+                </PopoverContent>
+              </Popover>
+            )}
+            <Button onClick={handleAddServer} disabled={!imageStatus?.can_create_server}>
+              <Plus className="mr-2 h-4 w-4" />
+              {t('addServer')}
+            </Button>
+          </div>
         </div>
         {imageStatus && !imageStatus.can_create_server && (
           <Alert variant="destructive" className="mt-4">
@@ -115,6 +154,7 @@ export default function ServersPage() {
               onEdit={handleEditServer}
               onDelete={handleDeleteServer}
               onViewLogs={handleViewLogs}
+              mapClickable
             />
           ))}
         </div>

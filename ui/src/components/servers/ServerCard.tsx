@@ -26,7 +26,7 @@ import {
   EyeOff,
   Copy,
   RefreshCw,
-  FileText,
+  Map,
 } from 'lucide-react';
 
 interface ServerCardProps {
@@ -38,6 +38,7 @@ interface ServerCardProps {
   onEdit: (server: Server) => void;
   onDelete: (server: Server) => void;
   onViewLogs?: (server: Server) => void;
+  mapClickable?: boolean;
 }
 
 export function ServerCard({
@@ -49,6 +50,7 @@ export function ServerCard({
   onEdit,
   onDelete,
   onViewLogs,
+  mapClickable,
 }: ServerCardProps) {
   const t = useTranslations('servers');
   const [showPassword, setShowPassword] = useState(false);
@@ -183,15 +185,16 @@ export function ServerCard({
               <Edit className="h-4 w-4" />
             </Button>
 
-            {/* 日志按钮 */}
-            {onViewLogs && (
+            {/* 日志按钮（仅保留为地图入口备用） */}
+            {onViewLogs && mapClickable && (
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 w-8 p-0 text-gray-600 hover:text-gray-700 hover:bg-gray-100"
+                className="h-8 w-8 p-0 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
                 onClick={() => onViewLogs(server)}
+                title={t('serverLogs')}
               >
-                <FileText className="h-4 w-4" />
+                <Map className="h-4 w-4" />
               </Button>
             )}
           </div>
@@ -233,7 +236,18 @@ export function ServerCard({
               <Info className="h-3.5 w-3.5 mr-1.5 text-green-600" />
               {t('card.map')}
             </span>
-            <span className="font-medium truncate ml-2">{getMapDisplayName(server.map)}</span>
+            {onViewLogs && mapClickable ? (
+              <button
+                onClick={() => onViewLogs(server)}
+                className="font-medium truncate ml-2 text-emerald-600 hover:text-emerald-700 hover:underline flex items-center gap-1"
+                title={t('serverLogs')}
+              >
+                <Map className="h-3 w-3" />
+                {getMapDisplayName(server.map)}
+              </button>
+            ) : (
+              <span className="font-medium truncate ml-2">{getMapDisplayName(server.map)}</span>
+            )}
           </div>
           <div className="flex items-center justify-between text-sm">
             <span className="text-gray-600">{t('card.maxPlayers')}</span>
