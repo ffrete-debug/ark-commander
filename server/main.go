@@ -102,6 +102,9 @@ func main() {
 	// Recovery
 	r.Use(gin.Recovery())
 
+	// Request timeout (30s)
+	r.Use(middleware.Timeout(30 * time.Second))
+
 	// Security headers
 	r.Use(middleware.SecureHeaders())
 

@@ -161,3 +161,18 @@ MIT
 - [ ] Multi-language support (en, zh, pt-BR)
 - [ ] Server metrics dashboard (CPU, RAM, players)
 - [ ] Kubernetes support
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+## Security
+
+See [SECURITY.md](SECURITY.md) for vulnerability reporting.
+
+- [ ] RCON integration for live server commands
+- [ ] Automated backups to cloud storage
+- [ ] Mod management UI (Steam Workshop browser)
+- [ ] Multi-language support (en, zh, pt-BR)
+- [ ] Server metrics dashboard (CPU, RAM, players)
+- [ ] Kubernetes support

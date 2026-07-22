@@ -1,5 +1,7 @@
 # 前端构建阶段
+# Stage 1: Frontend build
 FROM node:24-alpine AS frontend-builder
+LABEL stage="frontend"
 
 WORKDIR /app/ui
 
@@ -9,7 +11,9 @@ RUN npm install
 RUN npm run build
 
 # 后端构建阶段
+# Stage 2: Backend build
 FROM golang:1.24-alpine AS backend-builder
+LABEL stage="backend"
 
 # 设置工作目录
 WORKDIR /app
@@ -27,7 +31,11 @@ COPY server/ ./
 RUN go mod tidy && CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -trimpath -ldflags="-s -w" -o main .
 
 # 最终运行阶段
-FROM node:23-alpine
+# Stage 3: Runtime
+FROM node:23-alpine AS runtime
+LABEL version="1.0"
+LABEL org.opencontainers.image.source="https://github.com/ffrete-debug/ark-commander"
+LABEL org.opencontainers.image.description="ARK Server Commander - Web UI for managing ARK servers"
 
 # 安装必要的包
 RUN apk add --no-cache ca-certificates docker-cli sqlite wget
