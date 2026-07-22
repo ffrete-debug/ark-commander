@@ -17,33 +17,33 @@ import (
 )
 
 func RegisterRoutes(r *gin.Engine, updateService *update.UpdateService, hub *websocket.Hub) {
-	// 添加健康检查端点（需要日志）
+	// （）
 	r.GET("/health", func(c *gin.Context) {
-		c.JSON(200, gin.H{"status": "ok", "message": "服务器运行正常"})
+		c.JSON(200, gin.H{"status": "ok", "message": "Servers "})
 	})
 
-	// 静态文件服务 - 服务前端文件
-	// 检查静态文件目录是否存在
+	//  - 
+	// YesNo
 	if _, err := os.Stat("./static"); err == nil {
-		// 服务 Next.js 生成的静态资源
+		//  Next.js 
 		r.Static("/_next", "./static/_next")
 		r.Static("/public", "./static/public")
 		r.StaticFile("/favicon.ico", "./static/public/favicon.ico")
 
-		// 处理 SPA 路由 - 所有非 API 和静态资源的请求都返回 index.html
+		//  SPA  -  API  index.html
 		r.NoRoute(func(c *gin.Context) {
 			path := c.Request.URL.Path
-			// 如果是 API 请求，返回 404
+			// Yes API ， 404
 			if len(path) >= 5 && path[:5] == "/api/" {
-				c.JSON(http.StatusNotFound, gin.H{"error": "API 路由不存在"})
+				c.JSON(http.StatusNotFound, gin.H{"error": "API  "})
 				return
 			}
-			// 否则返回前端应用的 index.html
+			// No index.html
 			c.File("./static/index.html")
 		})
 	}
 
-	// API路由组（需要日志）
+	// API（）
 	api := r.Group("/api")
 	api.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
 		return fmt.Sprintf("[%s] %s %s %d %s Origin:%s\n",
@@ -56,7 +56,7 @@ func RegisterRoutes(r *gin.Engine, updateService *update.UpdateService, hub *web
 		)
 	}))
 	{
-		// 认证相关路由
+		// AuthenticationOff
 		authRoutes := api.Group("/auth")
 		{
 			authRoutes.GET("/check-init", auth.CheckInit)
@@ -66,13 +66,13 @@ func RegisterRoutes(r *gin.Engine, updateService *update.UpdateService, hub *web
 			authRoutes.POST("/logout", auth.Logout)
 		}
 
-		// 需要认证的路由
-		protected := api.Group("") // 改为空字符串，避免双斜杠
+		// Authentication
+		protected := api.Group("") // ，
 		protected.Use(middleware.AuthMiddleware())
 		{
 			protected.GET("/profile", auth.GetProfile)
 
-			// 服务器管理路由
+			// Server Management
 			serverRoutes := protected.Group("/servers")
 			{
 				serverRoutes.GET("", servers.GetServers)
@@ -88,7 +88,7 @@ func RegisterRoutes(r *gin.Engine, updateService *update.UpdateService, hub *web
 				serverRoutes.GET("/:id/logs", servers.GetServerLogs)
 			}
 
-			// 镜像管理路由
+			// Image Management
 			imageRoutes := protected.Group("/images")
 			{
 				imageRoutes.GET("/status", images.GetImageStatus)
@@ -98,7 +98,7 @@ func RegisterRoutes(r *gin.Engine, updateService *update.UpdateService, hub *web
 				imageRoutes.GET("/affected", images.GetAffectedServers)
 			}
 
-			// 插件文件管理路由
+			// Plugins
 			pluginRoutes := protected.Group("/plugins")
 			{
 				pluginRoutes.GET("", plugins.ListFiles)
@@ -113,30 +113,30 @@ func RegisterRoutes(r *gin.Engine, updateService *update.UpdateService, hub *web
 				pluginRoutes.GET("/zip-download", plugins.ZipDownload)
 			}
 
-			// 更新状态路由（Issue #3）
+			// Update status（Issue #3）
 			updateRoutes := api.Group("/updates")
 			{
 				updateRoutes.GET("/:id/status", func(c *gin.Context) {
 					serverID, err := strconv.ParseUint(c.Param("id"), 10, 32)
 					if err != nil {
-						c.JSON(http.StatusBadRequest, gin.H{"error": "无效的服务器ID"})
+						c.JSON(http.StatusBadRequest, gin.H{"error": "None Server ID"})
 						return
 					}
 
 					status, err := updateService.GetUpdateStatus(uint(serverID))
 					if err != nil {
-						c.JSON(http.StatusNotFound, gin.H{"error": "更新状态不存在"})
+						c.JSON(http.StatusNotFound, gin.H{"error": "Update status "})
 						return
 					}
 
 					c.JSON(http.StatusOK, gin.H{
-						"message": "获取成功",
+						"message": "Operation successful",
 						"data":    status,
 					})
 				})
 			}
 
-			// WebSocket 更新推送
+			// WebSocket 
 			r.GET("/ws/updates/:id", hub.HandleWebSocket)
 		}
 	}

@@ -15,93 +15,93 @@ import (
 
 var serverService = server.NewServerService()
 
-// GetServers 获取服务器列表
-// @Summary 获取服务器列表
-// @Description 获取当前用户的所有服务器列表
-// @Tags 服务器管理
+// GetServers Get server list
+// @Summary Get server list
+// @Description Get all servers for the current user
+// @Tags Server Management
 // @Accept json
 // @Produce json
 // @Security Bearer
-// @Success 200 {object} map[string][]models.ServerResponse "服务器列表"
-// @Failure 401 {object} map[string]string "未授权"
-// @Failure 500 {object} map[string]string "服务器错误"
+// @Success 200 {object} map[string][]models.ServerResponse "Server list"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 500 {object} map[string]string "Server error"
 // @Router /servers [get]
 func GetServers(c *gin.Context) {
 	userID := c.GetUint("user_id")
 
 	serverResponses, err := serverService.GetServers(userID)
 	if err != nil {
-		utils.InternalError(c, "服务器内部错误", err.Error())
+		utils.InternalError(c, "Internal server error", err.Error())
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "获取成功",
+		"message": "Operation successful",
 		"data":    serverResponses,
 	})
 }
 
-// CreateServer 创建服务器
-// @Summary 创建新服务器
-// @Description 创建一个新的ARK服务器配置
-// @Tags 服务器管理
+// CreateServer CreateServers
+// @Summary Create a new server
+// @Description Create a new ARK server configuration
+// @Tags Server Management
 // @Accept json
 // @Produce json
 // @Security Bearer
-// @Param server body models.ServerRequest true "服务器配置"
-// @Success 201 {object} map[string]models.ServerResponse "创建成功"
-// @Failure 400 {object} map[string]string "请求错误"
-// @Failure 401 {object} map[string]string "未授权"
-// @Failure 500 {object} map[string]string "服务器错误"
+// @Param server body models.ServerRequest true "Server configuration"
+// @Success 201 {object} map[string]models.ServerResponse "Created successfully"
+// @Failure 400 {object} map[string]string "Invalid request"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 500 {object} map[string]string "Server error"
 // @Router /servers [post]
 func CreateServer(c *gin.Context) {
 	userID := c.GetUint("user_id")
 
 	var req models.ServerRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.BadRequest(c, "请求参数错误", "")
+		utils.BadRequest(c, "Invalid request parameters", "")
 		return
 	}
 
 	if req.GameUserSettings != "" {
 		if err := utils.ValidateINIContent(req.GameUserSettings); err != nil {
-			utils.BadRequest(c, "GameUserSettings.ini 格式错误", err.Error())
+			utils.BadRequest(c, "GameUserSettings.ini format error", err.Error())
 			return
 		}
 	}
 	if req.GameIni != "" {
 		if err := utils.ValidateINIContent(req.GameIni); err != nil {
-			utils.BadRequest(c, "Game.ini 格式错误", err.Error())
+			utils.BadRequest(c, "Game.ini format error", err.Error())
 			return
 		}
 	}
 
 	response, err := serverService.CreateServer(userID, req)
 	if err != nil {
-		utils.InternalError(c, "服务器内部错误", err.Error())
+		utils.InternalError(c, "Internal server error", err.Error())
 		return
 	}
 
 	middleware.Log.Log(userID, "server.create", fmt.Sprintf("server:%d", response.ID), response.SessionName, c.ClientIP())
 
 	c.JSON(http.StatusCreated, gin.H{
-		"message": "服务器创建成功",
+		"message": "Server created successfully",
 		"data":    response,
 	})
 }
 
-// GetServer 获取单个服务器信息
-// @Summary 获取服务器详情
-// @Description 根据ID获取指定服务器的详细信息（包括配置文件内容）
-// @Tags 服务器管理
+// GetServer Servers
+// @Summary Get server details
+// @Description Get detailed server info including config files
+// @Tags Server Management
 // @Accept json
 // @Produce json
 // @Security Bearer
-// @Param id path int true "服务器ID"
-// @Success 200 {object} map[string]models.ServerResponse "服务器信息（包含配置文件）"
-// @Failure 400 {object} map[string]string "请求错误"
-// @Failure 404 {object} map[string]string "服务器不存在"
-// @Failure 401 {object} map[string]string "未授权"
+// @Param id path int true "Server ID"
+// @Success 200 {object} map[string]models.ServerResponse "Server info (including config files)"
+// @Failure 400 {object} map[string]string "Invalid request"
+// @Failure 404 {object} map[string]string "Server not found"
+// @Failure 401 {object} map[string]string "Unauthorized"
 // @Router /servers/{id} [get]
 func GetServer(c *gin.Context) {
 	userID := c.GetUint("user_id")
@@ -109,36 +109,36 @@ func GetServer(c *gin.Context) {
 
 	response, err := serverService.GetServer(userID, serverID)
 	if err != nil {
-		if err.Error() == "无效的服务器ID" {
-			utils.BadRequest(c, "请求参数错误", err.Error())
+		if err.Error() == "None Server ID" {
+			utils.BadRequest(c, "Invalid request parameters", err.Error())
 			return
 		}
-		if err.Error() == "服务器不存在" {
-			utils.NotFound(c, "未找到资源", err.Error())
+		if err.Error() == "Server not found" {
+			utils.NotFound(c, "Resource not found", err.Error())
 			return
 		}
-		utils.InternalError(c, "服务器内部错误", err.Error())
+		utils.InternalError(c, "Internal server error", err.Error())
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "获取成功",
+		"message": "Operation successful",
 		"data":    response,
 	})
 }
 
-// GetServerRCON 获取服务器RCON连接信息
-// @Summary 获取服务器RCON信息
-// @Description 获取指定服务器的RCON连接信息（包括密码）
-// @Tags 服务器管理
+// GetServerRCON ServersRCON
+// @Summary Get server RCON info
+// @Description Get RCON connection info including password
+// @Tags Server Management
 // @Accept json
 // @Produce json
 // @Security Bearer
-// @Param id path int true "服务器ID"
-// @Success 200 {object} map[string]interface{} "RCON信息"
-// @Failure 400 {object} map[string]string "请求错误"
-// @Failure 404 {object} map[string]string "服务器不存在"
-// @Failure 401 {object} map[string]string "未授权"
+// @Param id path int true "Server ID"
+// @Success 200 {object} map[string]interface{} "RCON info"
+// @Failure 400 {object} map[string]string "Invalid request"
+// @Failure 404 {object} map[string]string "Server not found"
+// @Failure 401 {object} map[string]string "Unauthorized"
 // @Router /servers/{id}/rcon [get]
 func GetServerRCON(c *gin.Context) {
 	userID := c.GetUint("user_id")
@@ -146,38 +146,38 @@ func GetServerRCON(c *gin.Context) {
 
 	data, err := serverService.GetServerRCON(userID, serverID)
 	if err != nil {
-		if err.Error() == "无效的服务器ID" {
-			utils.BadRequest(c, "请求参数错误", err.Error())
+		if err.Error() == "None Server ID" {
+			utils.BadRequest(c, "Invalid request parameters", err.Error())
 			return
 		}
-		if err.Error() == "服务器不存在" {
-			utils.NotFound(c, "未找到资源", err.Error())
+		if err.Error() == "Server not found" {
+			utils.NotFound(c, "Resource not found", err.Error())
 			return
 		}
-		utils.InternalError(c, "服务器内部错误", err.Error())
+		utils.InternalError(c, "Internal server error", err.Error())
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "获取成功",
+		"message": "Operation successful",
 		"data":    data,
 	})
 }
 
-// GetServerLogs 获取服务器日志
-// @Summary 获取服务器日志
-// @Description 获取指定服务器的Docker容器日志
-// @Tags 服务器管理
+// GetServerLogs Get server logs
+// @Summary Get server logs
+// @Description Get Docker container logs for the server
+// @Tags Server Management
 // @Accept json
 // @Produce json
 // @Security Bearer
-// @Param id path int true "服务器ID"
-// @Param tail query int false "返回最后N行日志，默认200"
-// @Success 200 {object} map[string]string "获取成功"
-// @Failure 400 {object} map[string]string "请求错误"
-// @Failure 404 {object} map[string]string "服务器不存在"
-// @Failure 401 {object} map[string]string "未授权"
-// @Failure 500 {object} map[string]string "服务器错误"
+// @Param id path int true "Server ID"
+// @Param tail query int false "Return last N log lines, default 200"
+// @Success 200 {object} map[string]string "Operation successful"
+// @Failure 400 {object} map[string]string "Invalid request"
+// @Failure 404 {object} map[string]string "Server not found"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 500 {object} map[string]string "Server error"
 // @Router /servers/{id}/logs [get]
 func GetServerLogs(c *gin.Context) {
 	userID := c.GetUint("user_id")
@@ -190,38 +190,38 @@ func GetServerLogs(c *gin.Context) {
 
 	data, err := serverService.GetServerLogs(userID, serverID, tail)
 	if err != nil {
-		if err.Error() == "无效的服务器ID" {
-			utils.BadRequest(c, "请求参数错误", err.Error())
+		if err.Error() == "None Server ID" {
+			utils.BadRequest(c, "Invalid request parameters", err.Error())
 			return
 		}
-		if err.Error() == "服务器不存在" {
-			utils.NotFound(c, "未找到资源", err.Error())
+		if err.Error() == "Server not found" {
+			utils.NotFound(c, "Resource not found", err.Error())
 			return
 		}
-		utils.InternalError(c, "服务器内部错误", err.Error())
+		utils.InternalError(c, "Internal server error", err.Error())
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "获取成功",
+		"message": "Operation successful",
 		"data":    data,
 	})
 }
 
-// UpdateServer 更新服务器
-// @Summary 更新服务器配置
-// @Description 更新指定服务器的配置信息（包括配置文件）
-// @Tags 服务器管理
+// UpdateServer Update Service
+// @Summary Update server configuration
+// @Description Update server configuration including config files
+// @Tags Server Management
 // @Accept json
 // @Produce json
 // @Security Bearer
-// @Param id path int true "服务器ID"
-// @Param server body models.ServerUpdateRequest true "更新的服务器配置（可包含配置文件内容）"
-// @Success 200 {object} map[string]models.ServerResponse "更新成功"
-// @Failure 400 {object} map[string]string "请求错误"
-// @Failure 404 {object} map[string]string "服务器不存在"
-// @Failure 401 {object} map[string]string "未授权"
-// @Failure 500 {object} map[string]string "服务器错误"
+// @Param id path int true "Server ID"
+// @Param server body models.ServerUpdateRequest true "Server configuration（）"
+// @Success 200 {object} map[string]models.ServerResponse "Success"
+// @Failure 400 {object} map[string]string "Invalid request"
+// @Failure 404 {object} map[string]string "Server not found"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 500 {object} map[string]string "Server error"
 // @Router /servers/{id} [put]
 func UpdateServer(c *gin.Context) {
 	userID := c.GetUint("user_id")
@@ -229,45 +229,45 @@ func UpdateServer(c *gin.Context) {
 
 	var req models.ServerUpdateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.BadRequest(c, "请求参数错误", "")
+		utils.BadRequest(c, "Invalid request parameters", "")
 		return
 	}
 
 	if req.GameUserSettings != "" {
 		if err := utils.ValidateINIContent(req.GameUserSettings); err != nil {
-			utils.BadRequest(c, "GameUserSettings.ini 格式错误", err.Error())
+			utils.BadRequest(c, "GameUserSettings.ini format error", err.Error())
 			return
 		}
 	}
 	if req.GameIni != "" {
 		if err := utils.ValidateINIContent(req.GameIni); err != nil {
-			utils.BadRequest(c, "Game.ini 格式错误", err.Error())
+			utils.BadRequest(c, "Game.ini format error", err.Error())
 			return
 		}
 	}
 
 	response, argsChanged, err := serverService.UpdateServer(userID, serverID, req)
 	if err != nil {
-		if err.Error() == "无效的服务器ID" {
-			utils.BadRequest(c, "请求参数错误", err.Error())
+		if err.Error() == "None Server ID" {
+			utils.BadRequest(c, "Invalid request parameters", err.Error())
 			return
 		}
-		if err.Error() == "服务器不存在" {
-			utils.NotFound(c, "未找到资源", err.Error())
+		if err.Error() == "Server not found" {
+			utils.NotFound(c, "Resource not found", err.Error())
 			return
 		}
-		if err.Error() == "服务器标识已存在" {
-			utils.BadRequest(c, "请求参数错误", err.Error())
+		if err.Error() == "Server identifier already exists" {
+			utils.BadRequest(c, "Invalid request parameters", err.Error())
 			return
 		}
-		utils.InternalError(c, "服务器内部错误", err.Error())
+		utils.InternalError(c, "Internal server error", err.Error())
 		return
 	}
 
-	// 构建响应消息
-	message := "服务器更新成功"
+	// 
+	message := "Server updated successfully"
 	if argsChanged && response.Status == "running" {
-		message = "服务器更新成功，启动参数已修改。由于服务器正在运行，需要重启服务器以应用新的启动参数。"
+		message = "Server updated successfully，Start 。 Servers ， Restart server Start 。"
 	}
 	middleware.Log.Log(userID, "server.update", fmt.Sprintf("server:%s", serverID), "", c.ClientIP())
 
@@ -278,19 +278,19 @@ func UpdateServer(c *gin.Context) {
 	})
 }
 
-// DeleteServer 删除服务器
-// @Summary 删除服务器
-// @Description 删除指定的服务器配置（仅允许删除已停止的服务器）
-// @Tags 服务器管理
+// DeleteServer Delete server
+// @Summary Delete server
+// @Description Delete server config (only stopped servers)
+// @Tags Server Management
 // @Accept json
 // @Produce json
 // @Security Bearer
-// @Param id path int true "服务器ID"
-// @Success 200 {object} map[string]string "删除成功"
-// @Failure 400 {object} map[string]string "请求错误"
-// @Failure 404 {object} map[string]string "服务器不存在"
-// @Failure 401 {object} map[string]string "未授权"
-// @Failure 500 {object} map[string]string "服务器错误"
+// @Param id path int true "Server ID"
+// @Success 200 {object} map[string]string "DeleteSuccess"
+// @Failure 400 {object} map[string]string "Invalid request"
+// @Failure 404 {object} map[string]string "Server not found"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 500 {object} map[string]string "Server error"
 // @Router /servers/{id} [delete]
 func DeleteServer(c *gin.Context) {
 	userID := c.GetUint("user_id")
@@ -298,40 +298,40 @@ func DeleteServer(c *gin.Context) {
 
 	err := serverService.DeleteServer(userID, serverID)
 	if err != nil {
-		if err.Error() == "无效的服务器ID" {
-			utils.BadRequest(c, "请求参数错误", err.Error())
+		if err.Error() == "None Server ID" {
+			utils.BadRequest(c, "Invalid request parameters", err.Error())
 			return
 		}
-		if err.Error() == "服务器不存在" {
-			utils.NotFound(c, "未找到资源", err.Error())
+		if err.Error() == "Server not found" {
+			utils.NotFound(c, "Resource not found", err.Error())
 			return
 		}
-		if err.Error() == "无法删除正在运行的服务器，请先停止服务器" {
-			utils.BadRequest(c, "请求参数错误", err.Error())
+		if err.Error() == "None DeleteRunning server， Stop server" {
+			utils.BadRequest(c, "Invalid request parameters", err.Error())
 			return
 		}
-		utils.InternalError(c, "服务器内部错误", err.Error())
+		utils.InternalError(c, "Internal server error", err.Error())
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "服务器删除成功",
+		"message": "Server deleted successfully",
 	})
 }
 
-// StartServer 启动服务器
-// @Summary 启动服务器
-// @Description 启动指定的ARK服务器
-// @Tags 服务器管理
+// StartServer Start server
+// @Summary Start server
+// @Description Start the specified ARK server
+// @Tags Server Management
 // @Accept json
 // @Produce json
 // @Security Bearer
-// @Param id path int true "服务器ID"
-// @Success 200 {object} map[string]string "启动成功"
-// @Failure 400 {object} map[string]string "请求错误"
-// @Failure 404 {object} map[string]string "服务器不存在"
-// @Failure 401 {object} map[string]string "未授权"
-// @Failure 500 {object} map[string]string "服务器错误"
+// @Param id path int true "Server ID"
+// @Success 200 {object} map[string]string "StartSuccess"
+// @Failure 400 {object} map[string]string "Invalid request"
+// @Failure 404 {object} map[string]string "Server not found"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 500 {object} map[string]string "Server error"
 // @Router /servers/{id}/start [post]
 func StartServer(c *gin.Context) {
 	userID := c.GetUint("user_id")
@@ -339,41 +339,41 @@ func StartServer(c *gin.Context) {
 
 	err := serverService.StartServer(userID, serverID)
 	if err != nil {
-		if err.Error() == "无效的服务器ID" {
-			utils.BadRequest(c, "请求参数错误", err.Error())
+		if err.Error() == "None Server ID" {
+			utils.BadRequest(c, "Invalid request parameters", err.Error())
 			return
 		}
-		if err.Error() == "服务器不存在" {
-			utils.NotFound(c, "未找到资源", err.Error())
+		if err.Error() == "Server not found" {
+			utils.NotFound(c, "Resource not found", err.Error())
 			return
 		}
-		if err.Error() == "服务器已在运行中" || err.Error() == "服务器正在启动中" {
-			utils.BadRequest(c, "请求参数错误", err.Error())
+		if err.Error() == "Servers " || err.Error() == "Servers Start " {
+			utils.BadRequest(c, "Invalid request parameters", err.Error())
 			return
 		}
-		utils.InternalError(c, "服务器内部错误", err.Error())
+		utils.InternalError(c, "Internal server error", err.Error())
 		return
 	}
 	middleware.Log.Log(userID, "server.start", fmt.Sprintf("server:%s", serverID), "", c.ClientIP())
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "服务器启动命令已发送",
+		"message": "Server start command sent",
 	})
 }
 
-// StopServer 停止服务器
-// @Summary 停止服务器
-// @Description 停止指定的ARK服务器
-// @Tags 服务器管理
+// StopServer Stop server
+// @Summary Stop server
+// @Description Stop the specified ARK server
+// @Tags Server Management
 // @Accept json
 // @Produce json
 // @Security Bearer
-// @Param id path int true "服务器ID"
-// @Success 200 {object} map[string]string "停止成功"
-// @Failure 400 {object} map[string]string "请求错误"
-// @Failure 404 {object} map[string]string "服务器不存在"
-// @Failure 401 {object} map[string]string "未授权"
-// @Failure 500 {object} map[string]string "服务器错误"
+// @Param id path int true "Server ID"
+// @Success 200 {object} map[string]string "StopSuccess"
+// @Failure 400 {object} map[string]string "Invalid request"
+// @Failure 404 {object} map[string]string "Server not found"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 500 {object} map[string]string "Server error"
 // @Router /servers/{id}/stop [post]
 func StopServer(c *gin.Context) {
 	userID := c.GetUint("user_id")
@@ -381,41 +381,41 @@ func StopServer(c *gin.Context) {
 
 	err := serverService.StopServer(userID, serverID)
 	if err != nil {
-		if err.Error() == "无效的服务器ID" {
-			utils.BadRequest(c, "请求参数错误", err.Error())
+		if err.Error() == "None Server ID" {
+			utils.BadRequest(c, "Invalid request parameters", err.Error())
 			return
 		}
-		if err.Error() == "服务器不存在" {
-			utils.NotFound(c, "未找到资源", err.Error())
+		if err.Error() == "Server not found" {
+			utils.NotFound(c, "Resource not found", err.Error())
 			return
 		}
-		if err.Error() == "服务器已经停止" || err.Error() == "服务器正在停止中" {
-			utils.BadRequest(c, "请求参数错误", err.Error())
+		if err.Error() == "Servers Stop" || err.Error() == "Servers Stop " {
+			utils.BadRequest(c, "Invalid request parameters", err.Error())
 			return
 		}
-		utils.InternalError(c, "服务器内部错误", err.Error())
+		utils.InternalError(c, "Internal server error", err.Error())
 		return
 	}
 	middleware.Log.Log(userID, "server.stop", fmt.Sprintf("server:%s", serverID), "", c.ClientIP())
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "服务器停止命令已发送",
+		"message": "Server stop command sent",
 	})
 }
 
-// RecreateContainer 重建容器
-// @Summary 重建服务器容器
-// @Description 使用新镜像重建指定服务器的容器
-// @Tags 服务器管理
+// RecreateContainer 
+// @Summary Rebuild server container
+// @Description Rebuild container for server using new image
+// @Tags Server Management
 // @Accept json
 // @Produce json
 // @Security Bearer
-// @Param id path int true "服务器ID"
-// @Success 200 {object} map[string]string "重建状态"
-// @Failure 400 {object} map[string]string "请求错误"
-// @Failure 401 {object} map[string]string "未授权"
-// @Failure 404 {object} map[string]string "服务器不存在"
-// @Failure 500 {object} map[string]string "服务器错误"
+// @Param id path int true "Server ID"
+// @Success 200 {object} map[string]string "Status"
+// @Failure 400 {object} map[string]string "Invalid request"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 404 {object} map[string]string "Server not found"
+// @Failure 500 {object} map[string]string "Server error"
 // @Router /servers/{id}/recreate [post]
 func RecreateContainer(c *gin.Context) {
 	userID := c.GetUint("user_id")
@@ -423,37 +423,37 @@ func RecreateContainer(c *gin.Context) {
 
 	err := serverService.RecreateContainer(userID, serverID)
 	if err != nil {
-		if err.Error() == "无效的服务器ID" {
-			utils.BadRequest(c, "请求参数错误", err.Error())
+		if err.Error() == "None Server ID" {
+			utils.BadRequest(c, "Invalid request parameters", err.Error())
 			return
 		}
-		if err.Error() == "服务器不存在" {
-			utils.NotFound(c, "未找到资源", err.Error())
+		if err.Error() == "Server not found" {
+			utils.NotFound(c, "Resource not found", err.Error())
 			return
 		}
-		utils.InternalError(c, "服务器内部错误", err.Error())
+		utils.InternalError(c, "Internal server error", err.Error())
 		return
 	}
 	middleware.Log.Log(userID, "server.recreate", fmt.Sprintf("server:%s", serverID), "", c.ClientIP())
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "容器重建已开始",
+		"message": "Container rebuild started",
 	})
 }
 
-// RestartServer 重启服务器
-// @Summary 重启服务器
-// @Description 重启指定的ARK服务器（先停止再启动）
-// @Tags 服务器管理
+// RestartServer Restart server
+// @Summary Restart server
+// @Description Restart the specified ARK server (stop then start)
+// @Tags Server Management
 // @Accept json
 // @Produce json
 // @Security Bearer
-// @Param id path int true "服务器ID"
-// @Success 200 {object} map[string]string "重启成功"
-// @Failure 400 {object} map[string]string "请求错误"
-// @Failure 401 {object} map[string]string "未授权"
-// @Failure 404 {object} map[string]string "服务器不存在"
-// @Failure 500 {object} map[string]string "服务器错误"
+// @Param id path int true "Server ID"
+// @Success 200 {object} map[string]string "RestartSuccess"
+// @Failure 400 {object} map[string]string "Invalid request"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 404 {object} map[string]string "Server not found"
+// @Failure 500 {object} map[string]string "Server error"
 // @Router /servers/{id}/restart [post]
 func RestartServer(c *gin.Context) {
 	userID := c.GetUint("user_id")
@@ -461,24 +461,24 @@ func RestartServer(c *gin.Context) {
 
 	// stop first
 	if err := serverService.StopServer(userID, serverID); err != nil {
-		if err.Error() == "无效的服务器ID" {
-			utils.BadRequest(c, "请求参数错误", err.Error())
+		if err.Error() == "None Server ID" {
+			utils.BadRequest(c, "Invalid request parameters", err.Error())
 			return
 		}
-		if err.Error() == "服务器不存在" {
-			utils.NotFound(c, "未找到资源", err.Error())
+		if err.Error() == "Server not found" {
+			utils.NotFound(c, "Resource not found", err.Error())
 			return
 		}
 		// ignore "already stopped" errors
 	}
 	// then start
 	if err := serverService.StartServer(userID, serverID); err != nil {
-		utils.InternalError(c, "服务器内部错误", err.Error())
+		utils.InternalError(c, "Internal server error", err.Error())
 		return
 	}
 	middleware.Log.Log(userID, "server.restart", fmt.Sprintf("server:%s", serverID), "", c.ClientIP())
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "服务器重启命令已发送",
+		"message": "Server restart command sent",
 	})
 }

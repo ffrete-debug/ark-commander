@@ -12,7 +12,7 @@ var (
 	ServerPort = "8080"
 )
 
-// 弱密钥黑名单
+// Weak secret blacklist
 var weakSecrets = []string{
 	"ark-server-commander-secret-key",
 	"secret",
@@ -24,18 +24,18 @@ var weakSecrets = []string{
 }
 
 func InitConfig() error {
-	// JWT密钥必须从环境变量读取
+	// JWT secret must be read from environment variable
 	secret := os.Getenv("JWT_SECRET")
 	if secret == "" {
 		return fmt.Errorf("JWT_SECRET environment variable is required")
 	}
 
-	// 验证密钥长度
+	// Validate secret length
 	if len(secret) < 32 {
 		return fmt.Errorf("JWT_SECRET must be at least 32 characters long (current: %d)", len(secret))
 	}
 
-	// 检查是否使用了弱密钥
+	// Check for weak secrets
 	secretLower := strings.ToLower(secret)
 	for _, weak := range weakSecrets {
 		if strings.Contains(secretLower, weak) {
@@ -45,7 +45,7 @@ func InitConfig() error {
 
 	JWTSecret = []byte(secret)
 
-	// 读取其他配置
+	// Read other configuration
 	if dbPath := os.Getenv("DB_PATH"); dbPath != "" {
 		DBPath = dbPath
 	}

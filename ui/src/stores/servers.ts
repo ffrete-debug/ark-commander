@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
-// 定义服务器对象类型
+// Define server object type
 export interface Server {
     id: string;
     identifier: string;
@@ -21,7 +21,7 @@ export interface Server {
     updated_at: string;
 }
 
-// 定义服务器状态类型
+// Define server state type
 interface ServersState {
     servers: Server[];
     isLoading: boolean;
@@ -55,7 +55,7 @@ export interface ImageStatus {
     };
 }
 
-// 定义服务器操作类型
+// Define server actions type
 interface ServersActions {
     fetchServers: () => Promise<void>;
     createServer: (serverData: Partial<Server>) => Promise<Server>;
@@ -72,7 +72,7 @@ interface ServersActions {
 const getAuthHeaders = () => {
     const token = Cookies.get('auth-token');
     if (!token) {
-        throw new Error('未找到认证token');
+        throw new Error('Authentication token not found');
     }
     return {
         'Authorization': `Bearer ${token}`,
@@ -93,7 +93,7 @@ const useServersStore = create<ServersState>((set, get) => ({
                 const response = await axios.get('/api/servers', { headers: getAuthHeaders() });
                 set({ servers: response.data.data || [] });
             } catch (error) {
-                set({ error: '获取服务器列表失败' });
+                set({ error: 'Failed to fetch server list' });
                 throw error;
             } finally {
                 set({ isLoading: false });
@@ -106,7 +106,7 @@ const useServersStore = create<ServersState>((set, get) => ({
                 set((state) => ({ servers: [...state.servers, newServer] }));
                 return newServer;
             } catch (error) {
-                set({ error: '创建服务器失败' });
+                set({ error: 'Failed to create server' });
                 throw error;
             }
         },
@@ -119,7 +119,7 @@ const useServersStore = create<ServersState>((set, get) => ({
                 }));
                 return updatedServer;
             } catch (error) {
-                set({ error: '更新服务器失败' });
+                set({ error: 'Failed to update server' });
                 throw error;
             }
         },
@@ -130,7 +130,7 @@ const useServersStore = create<ServersState>((set, get) => ({
                     servers: state.servers.filter((s) => s.id !== serverId),
                 }));
             } catch (error) {
-                set({ error: '删除服务器失败' });
+                set({ error: 'Failed to delete server' });
                 throw error;
             }
         },
@@ -139,7 +139,7 @@ const useServersStore = create<ServersState>((set, get) => ({
                 const response = await axios.get(`/api/servers/${serverId}`, { headers: getAuthHeaders() });
                 return response.data.data;
             } catch (error) {
-                set({ error: '获取服务器信息失败' });
+                set({ error: 'Failed to get server info' });
                 throw error;
             }
         },
@@ -148,7 +148,7 @@ const useServersStore = create<ServersState>((set, get) => ({
                 const response = await axios.get('/api/images/status', { headers: getAuthHeaders() });
                 set({ imageStatus: response.data.data });
             } catch (error) {
-                set({ error: '获取镜像状态失败' });
+                set({ error: 'Failed to get image status' });
                 throw error;
             }
         },
@@ -158,7 +158,7 @@ const useServersStore = create<ServersState>((set, get) => ({
                 get().actions.updateServerStatus(serverId, 'starting');
                 setTimeout(() => get().actions.updateServerStatus(serverId, 'running'), 3000);
             } catch (error) {
-                set({ error: '启动服务器失败' });
+                set({ error: 'Failed to start server' });
                 throw error;
             }
         },
@@ -168,7 +168,7 @@ const useServersStore = create<ServersState>((set, get) => ({
                 get().actions.updateServerStatus(serverId, 'stopping');
                 setTimeout(() => get().actions.updateServerStatus(serverId, 'stopped'), 2000);
             } catch (error) {
-                set({ error: '停止服务器失败' });
+                set({ error: 'Failed to stop server' });
                 throw error;
             }
         },
@@ -178,7 +178,7 @@ const useServersStore = create<ServersState>((set, get) => ({
                 get().actions.updateServerStatus(serverId, 'restarting');
                 setTimeout(() => get().actions.updateServerStatus(serverId, 'running'), 5000);
             } catch (error) {
-                set({ error: '重启服务器失败' });
+                set({ error: 'Failed to restart server' });
                 throw error;
             }
         },

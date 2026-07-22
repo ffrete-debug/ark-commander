@@ -6,7 +6,7 @@ export async function POST(request: Request) {
   try {
     const h = await headers();
     const auth = h.get('authorization');
-    if (!auth) return NextResponse.json({ error: '未授权' }, { status: 401 });
+    if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     const url = new URL(request.url);
     const body = await request.json();
     const res = await axios.post(

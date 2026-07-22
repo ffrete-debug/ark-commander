@@ -15,18 +15,18 @@ func RegisterUpdateRoutes(rg *gin.RouterGroup, updateService *update.UpdateServi
 		updates.GET("/:id/status", func(c *gin.Context) {
 			serverID, err := strconv.ParseUint(c.Param("id"), 10, 32)
 			if err != nil {
-				c.JSON(http.StatusBadRequest, gin.H{"error": "无效的服务器ID"})
+				c.JSON(http.StatusBadRequest, gin.H{"error": "None Server ID"})
 				return
 			}
 
 			status, err := updateService.GetUpdateStatus(uint(serverID))
 			if err != nil {
-				c.JSON(http.StatusNotFound, gin.H{"error": "更新状态不存在"})
+				c.JSON(http.StatusNotFound, gin.H{"error": "Update status "})
 				return
 			}
 
 			c.JSON(http.StatusOK, gin.H{
-				"message": "获取成功",
+				"message": "Operation successful",
 				"data":    status,
 			})
 		})

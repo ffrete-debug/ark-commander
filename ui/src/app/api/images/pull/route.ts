@@ -9,7 +9,7 @@ export async function POST(request: Request) {
   const authorization = headersList.get('authorization');
 
   if (!authorization) {
-    return NextResponse.json({ error: '未授权' }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
@@ -17,7 +17,7 @@ export async function POST(request: Request) {
     const { image_name } = body;
 
     if (!image_name) {
-      return NextResponse.json({ error: '镜像名称不能为空' }, { status: 400 });
+      return NextResponse.json({ error: 'Image name cannot be empty' }, { status: 400 });
     }
 
     const config = {
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
   } catch (error: unknown) {
     const axiosError = error as { response?: { data?: { error?: string }, status?: number } };
     return NextResponse.json({
-      error: axiosError.response?.data?.error || '拉取镜像失败'
+      error: axiosError.response?.data?.error || 'Failed to pull image'
     }, { status: axiosError.response?.status || 500 });
   }
 }

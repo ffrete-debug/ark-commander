@@ -9,7 +9,7 @@ export async function POST(request: Request) {
   } catch (error: unknown) {
     const axiosError = error as { response?: { data?: { error?: string }, status?: number } };
     return NextResponse.json({
-      error: axiosError.response?.data?.error || '初始化失败'
+      error: axiosError.response?.data?.error || 'Initialization failed'
     }, { status: axiosError.response?.status || 500 });
   }
 }

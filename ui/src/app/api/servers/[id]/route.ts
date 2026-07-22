@@ -9,7 +9,7 @@ async function proxyRequest(request: Request, method: 'GET' | 'PUT' | 'DELETE', 
   const authorization = headersList.get('authorization');
 
   if (!authorization) {
-    return NextResponse.json({ error: '未授权' }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   const config = {
@@ -33,7 +33,7 @@ async function proxyRequest(request: Request, method: 'GET' | 'PUT' | 'DELETE', 
   } catch (error: unknown) {
     const axiosError = error as { response?: { data?: { error?: string }, status?: number } };
     return NextResponse.json({
-      error: axiosError.response?.data?.error || '请求失败'
+      error: axiosError.response?.data?.error || 'Request failed'
     }, { status: axiosError.response?.status || 500 });
   }
 }

@@ -28,7 +28,7 @@ export function ImageStatus({
 }: ImageStatusProps) {
   const t = useTranslations('servers.dockerImages');
 
-  // 格式化字节大小
+  // 
   const formatBytes = (bytes: number): string => {
     if (bytes === 0) return '0 B';
     const k = 1024;
@@ -37,7 +37,7 @@ export function ImageStatus({
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  // 获取镜像显示名称
+  // Get
   const getImageDisplayName = (imageName: string): string => {
     switch (imageName) {
       case 'tbro98/ase-server:latest': return t('arkServer');
@@ -46,7 +46,7 @@ export function ImageStatus({
     }
   };
 
-  // 获取状态文本
+  // GetStatus
   const getStatusText = (status: { ready: boolean; pulling: boolean; has_update?: boolean }): string => {
     if (status.pulling) {
       return t('downloading');
@@ -59,7 +59,7 @@ export function ImageStatus({
 
   return (
     <div className="flex flex-col gap-4 text-sm w-full">
-      {/* 总体状态 */}
+      {/*  Status */}
       <div className="flex items-center gap-2">
         {imageStatus.any_pulling ? (
           <div className="flex items-center gap-2 text-yellow-600">
@@ -89,9 +89,9 @@ export function ImageStatus({
         </Button>
       </div>
 
-      {/* 操作按钮区域 */}
+      {/*   */}
       <div className="flex gap-2">
-        {/* 手动下载按钮 */}
+        {/*   */}
         {!imageStatus.can_start_server && !imageStatus.any_pulling && (
           <Button
             variant="default"
@@ -104,7 +104,7 @@ export function ImageStatus({
           </Button>
         )}
         
-        {/* 检查更新按钮 */}
+        {/*   */}
         {imageStatus.can_start_server && (
           <Button
             variant="default"
@@ -118,7 +118,7 @@ export function ImageStatus({
         )}
       </div>
 
-      {/* 镜像横向排列 */}
+      {/*   */}
       {imageStatus.images && (
         <div className="flex flex-wrap gap-4">
           {Object.entries(imageStatus.images).map(([imageName, status]) => (
@@ -132,7 +132,7 @@ export function ImageStatus({
                   : 'border-l-red-500'
               }`}
             >
-              {/* 镜像标题和状态 */}
+              {/*  Status */}
               <div className="flex justify-between items-center mb-3">
                 <h3 className="text-sm font-semibold text-gray-900">
                   {getImageDisplayName(imageName)}
@@ -151,7 +151,7 @@ export function ImageStatus({
                 </Badge>
               </div>
 
-              {/* 层级信息 - 使用 Popover 展示 */}
+              {/*   -   Popover   */}
               {status.pulling && status.layers && (
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
@@ -203,7 +203,7 @@ export function ImageStatus({
                                 }
                               </div>
                               
-                              {/* 层级进度条 */}
+                              {/*   */}
                               <Progress
                                 value={layer.size > 0 ? Math.min((layer.progress / layer.size) * 100, 100) : (layer.status === 'complete' ? 100 : 0)}
                                 className="h-2"
@@ -217,7 +217,7 @@ export function ImageStatus({
                 </div>
               )}
 
-              {/* 镜像就绪状态 */}
+              {/*  Status */}
               {status.ready && !status.pulling && (
                 <div className="text-center py-4">
                   {!status.has_update ? (
@@ -242,7 +242,7 @@ export function ImageStatus({
                 </div>
               )}
 
-              {/* 镜像未就绪状态 */}
+              {/*  Status */}
               {!status.ready && !status.pulling && (
                 <div className="text-center py-4">
                   <AlertCircle className="w-8 h-8 text-gray-400 mx-auto mb-2" />
@@ -263,7 +263,7 @@ export function ImageStatus({
         </div>
       )}
       
-      {/* 统计信息 */}
+      {/*   */}
       {imageStatus.total_images && (
         <div className="mt-6 pt-4 border-t border-gray-200">
           <div className="flex justify-between items-center text-sm text-gray-600">

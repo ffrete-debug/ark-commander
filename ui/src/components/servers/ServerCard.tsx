@@ -55,11 +55,11 @@ export function ServerCard({
   const t = useTranslations('servers');
   const [showPassword, setShowPassword] = useState(false);
 
-  // 获取地图的显示名称（翻译名称或原始名称）
+  // GetMap（）
   const getMapDisplayName = (mapName: string) => {
     const mapKey = `edit.maps.${mapName}`;
     const translatedName = t(mapKey);
-    // 如果翻译存在且不等于key本身，返回翻译；否则返回原始名称
+    // Ifkey，；No
     return translatedName !== mapKey ? translatedName : mapName;
   };
 
@@ -141,10 +141,10 @@ export function ServerCard({
         <div className="flex justify-between items-start mb-2">
           <CardTitle className="text-base font-semibold truncate pr-2">{server.session_name}</CardTitle>
           <div className="flex items-center gap-1 flex-shrink-0">
-            {/* 启动/停止按钮 */}
+            {/* Start/Stop  */}
             {StartStopButton()}
 
-            {/* 重启按钮 */}
+            {/* Restart  */}
             {server.status === 'running' && (
               <Button
                 variant="ghost"
@@ -156,7 +156,7 @@ export function ServerCard({
               </Button>
             )}
 
-            {/* 删除按钮 */}
+            {/* Delete  */}
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -175,7 +175,7 @@ export function ServerCard({
               </PopoverContent>
             </Popover>
 
-            {/* 编辑按钮 */}
+            {/* Edit  */}
             <Button
               variant="ghost"
               size="sm"
@@ -185,7 +185,7 @@ export function ServerCard({
               <Edit className="h-4 w-4" />
             </Button>
 
-            {/* 日志按钮（仅保留为地图入口备用） */}
+            {/*  （ Map ） */}
             {onViewLogs && mapClickable && (
               <Button
                 variant="ghost"
@@ -207,7 +207,7 @@ export function ServerCard({
         </Badge>
       </CardHeader>
       <CardContent className="pt-0 space-y-3">
-        {/* 端口配置 - 紧凑显示 */}
+        {/*   -   */}
         <div className="bg-gray-50 rounded-lg p-3">
           <div className="flex items-center mb-2">
             <Wifi className="h-3.5 w-3.5 text-blue-600 mr-1.5" />
@@ -229,7 +229,7 @@ export function ServerCard({
           </div>
         </div>
 
-        {/* 服务器信息 */}
+        {/* Servers  */}
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm">
             <span className="text-gray-600 flex items-center">
@@ -255,7 +255,7 @@ export function ServerCard({
           </div>
         </div>
 
-        {/* 管理员密码 */}
+        {/*  Password */}
         <div className="bg-amber-50 rounded-lg p-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center">

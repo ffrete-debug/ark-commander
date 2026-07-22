@@ -17,13 +17,13 @@ type RefreshTokenRequest struct {
 	RefreshToken string `json:"refresh_token" binding:"required"`
 }
 
-// CheckInit 检查是否已初始化用户
-// @Summary 检查系统初始化状态
-// @Description 检查系统是否已经初始化过用户
-// @Tags 认证
+// Check Init YesNoInitializeUser
+// @Summary Initialization status
+// @Description YesNoInitializeUser
+// @Tags Authentication
 // @Accept json
 // @Produce json
-// @Success 200 {object} map[string]bool "初始化状态"
+// @Success 200 {object} map[string]bool "Initialization status"
 // @Router /auth/check-init [get]
 func CheckInit(c *gin.Context) {
 	var count int64
@@ -34,61 +34,61 @@ func CheckInit(c *gin.Context) {
 	})
 }
 
-// InitUser 初始化用户
-// @Summary 初始化系统用户
-// @Description 创建第一个管理员用户，只能在系统未初始化时调用
-// @Tags 认证
+// InitUser InitializeUser
+// @Summary InitializeUser
+// @Description CreateUser，Initialize
+// @Tags Authentication
 // @Accept json
 // @Produce json
-// @Param user body models.UserRequest true "用户信息"
-// @Success 200 {object} map[string]interface{} "初始化成功"
-// @Failure 400 {object} map[string]string "请求错误"
-// @Failure 500 {object} map[string]string "服务器错误"
+// @Param user body models.UserRequest true "User"
+// @Success 200 {object} map[string]interface{} "InitializeSuccess"
+// @Failure 400 {object} map[string]string "Invalid request"
+// @Failure 500 {object} map[string]string "Server error"
 // @Router /auth/init [post]
 func InitUser(c *gin.Context) {
 	var req models.UserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "请求参数错误"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request parameters"})
 		return
 	}
 
-	// 检查是否已有用户
+	// YesNoUser
 	var count int64
 	database.DB.Model(&models.User{}).Count(&count)
 	if count > 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "系统已初始化"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": " Initialize"})
 		return
 	}
 
-	// 加密密码
+	// Password
 	hashedPassword, err := utils.HashPassword(req.Password)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "密码加密失败"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Password "})
 		return
 	}
 
-	// 创建用户
+	// CreateUser
 	user := models.User{
 		Username: req.Username,
 		Password: hashedPassword,
 	}
 
 	if err := database.DB.Create(&user).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "用户创建失败"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "UserCreate "})
 		return
 	}
 
-	// 生成token
+	// token
 	token, err := utils.GenerateToken(user.ID, user.Username)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "令牌生成失败"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": " "})
 		return
 	}
 
 	middleware.Log.Log(user.ID, "auth.init", "user", user.Username, c.ClientIP())
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "初始化成功",
+		"message": "InitializeSuccess",
 		"token":   token,
 		"user": models.UserResponse{
 			ID:       user.ID,
@@ -98,56 +98,56 @@ func InitUser(c *gin.Context) {
 }
 
 
-// Login 用户登录
-// @Summary 用户登录
-// @Description 使用用户名和密码登录系统
-// @Tags 认证
+// Login UserLogin
+// @Summary UserLogin
+// @Description UserPasswordLogin
+// @Tags Authentication
 // @Accept json
 // @Produce json
-// @Param credentials body models.UserRequest true "登录凭据"
-// @Success 200 {object} map[string]interface{} "登录成功"
-// @Failure 400 {object} map[string]string "请求错误"
-// @Failure 401 {object} map[string]string "认证失败"
-// @Failure 500 {object} map[string]string "服务器错误"
+// @Param credentials body models.UserRequest true "Login credentials"
+// @Success 200 {object} map[string]interface{} "LoginSuccess"
+// @Failure 400 {object} map[string]string "Invalid request"
+// @Failure 401 {object} map[string]string "Authentication"
+// @Failure 500 {object} map[string]string "Server error"
 // @Router /auth/login [post]
 func Login(c *gin.Context) {
 	var req models.UserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "请求参数错误"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request parameters"})
 		return
 	}
 
-	// 查找用户
+	// User
 	var user models.User
 	if err := database.DB.Where("username = ?", req.Username).First(&user).Error; err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "用户名或密码错误"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User PasswordError"})
 		return
 	}
 
-	// 验证密码
+	// Password
 	if !utils.CheckPassword(req.Password, user.Password) {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "用户名或密码错误"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User PasswordError"})
 		return
 	}
 
-	// 生成token
+	// token
 	token, err := utils.GenerateToken(user.ID, user.Username)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "令牌生成失败"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": " "})
 		return
 	}
 
-	// 生成refresh token
+	// refresh token
 	refreshToken, err := utils.GenerateRefreshToken(user.ID, user.Username)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "刷新令牌生成失败"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": " "})
 		return
 	}
 
 	middleware.Log.Log(user.ID, "auth.login", "user", user.Username, c.ClientIP())
 
 	c.JSON(http.StatusOK, gin.H{
-		"message":       "登录成功",
+		"message":       "LoginSuccess",
 		"token":         token,
 		"refresh_token": refreshToken,
 		"user": models.UserResponse{
@@ -157,51 +157,51 @@ func Login(c *gin.Context) {
 	})
 }
 
-// RefreshToken 刷新访问令牌
-// @Summary 刷新JWT令牌
-// @Description 使用refresh_token获取新的access_token和refresh_token
-// @Tags 认证
+// RefreshToken refreshes the JWT access token
+// @Summary JWT
+// @Description refresh_tokenaccess_tokenrefresh_token
+// @Tags Authentication
 // @Accept json
 // @Produce json
-// @Param request body RefreshTokenRequest true "刷新令牌请求"
-// @Success 200 {object} map[string]interface{} "刷新成功"
-// @Failure 400 {object} map[string]string "请求错误"
-// @Failure 401 {object} map[string]string "令牌无效"
+// @Param request body RefreshTokenRequest true ""
+// @Success 200 {object} map[string]interface{} "Success"
+// @Failure 400 {object} map[string]string "Invalid request"
+// @Failure 401 {object} map[string]string "None"
 // @Router /auth/refresh [post]
 func RefreshToken(c *gin.Context) {
 	var req RefreshTokenRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "请求参数错误"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request parameters"})
 		return
 	}
 
-	// 解析refresh token
+	// refresh token
 	claims, err := utils.ParseToken(req.RefreshToken)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "无效的刷新令牌"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "None "})
 		return
 	}
 
-	// 将旧refresh token加入黑名单
+	// refresh token
 	utils.BlacklistToken(req.RefreshToken, time.Now().Add(24*time.Hour))
 
-	// 生成新的access token和refresh token
+	// access tokenrefresh token
 	accessToken, err := utils.GenerateToken(claims.UserID, claims.Username)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "令牌生成失败"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": " "})
 		return
 	}
 
 	newRefreshToken, err := utils.GenerateRefreshToken(claims.UserID, claims.Username)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "刷新令牌生成失败"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": " "})
 		return
 	}
 
 	middleware.Log.Log(claims.UserID, "auth.refresh", "token", "", c.ClientIP())
 
 	c.JSON(http.StatusOK, gin.H{
-		"message":       "令牌刷新成功",
+		"message":       " Success",
 		"token":         accessToken,
 		"refresh_token": newRefreshToken,
 		"user": models.UserResponse{
@@ -211,48 +211,48 @@ func RefreshToken(c *gin.Context) {
 	})
 }
 
-// Logout 用户登出
-// @Summary 用户登出
-// @Description 将当前JWT令牌加入黑名单
-// @Tags 认证
+// Logout User
+// @Summary User
+// @Description JWT
+// @Tags Authentication
 // @Accept json
 // @Produce json
 // @Security Bearer
-// @Success 200 {object} map[string]string "登出成功"
-// @Failure 401 {object} map[string]string "未授权"
+// @Success 200 {object} map[string]string "Success"
+// @Failure 401 {object} map[string]string "Unauthorized"
 // @Router /auth/logout [post]
 func Logout(c *gin.Context) {
 	authHeader := c.GetHeader("Authorization")
 	if authHeader == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "未提供授权令牌"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": " "})
 		return
 	}
 
 	parts := strings.SplitN(authHeader, " ", 2)
 	if !(len(parts) == 2 && parts[0] == "Bearer") {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "授权令牌格式错误"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": " Error"})
 		return
 	}
 
-	// 将当前token加入黑名单
+	// token
 	utils.BlacklistToken(parts[1], time.Now().Add(24*time.Hour))
 
 	middleware.Log.Log(c.GetUint("user_id"), "auth.logout", "token", parts[1], c.ClientIP())
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "登出成功",
+		"message": " Success",
 	})
 }
 
-// GetProfile 获取用户信息
-// @Summary 获取当前用户信息
-// @Description 获取当前登录用户的基本信息
-// @Tags 用户
+// GetProfile User
+// @Summary User
+// @Description LoginUser
+// @Tags User
 // @Accept json
 // @Produce json
 // @Security Bearer
-// @Success 200 {object} map[string]models.UserResponse "用户信息"
-// @Failure 401 {object} map[string]string "未授权"
+// @Success 200 {object} map[string]models.UserResponse "User"
+// @Failure 401 {object} map[string]string "Unauthorized"
 // @Router /profile [get]
 func GetProfile(c *gin.Context) {
 	userID := c.GetUint("user_id")

@@ -54,7 +54,7 @@ export default function ServerNewPage() {
     try {
       setSaving(true);
       await createServer(formData);
-      // 创建成功后跳转回服务器列表
+      // Created successfullyServer list
       router.push('/servers');
     } catch {
       setError(t('serverCreateError'));

@@ -16,7 +16,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// ImagePullProgress 镜像拉取进度信息
+// ImagePullProgress 
 type ImagePullProgress struct {
 	Status         string `json:"status"`
 	Progress       string `json:"progress"`
@@ -27,25 +27,25 @@ type ImagePullProgress struct {
 	ID string `json:"id"`
 }
 
-// LayerStatus 层级状态信息
+// LayerStatus Status
 type LayerStatus struct {
-	ID       string `json:"id"`       // 层级ID
-	Size     int64  `json:"size"`     // 层级大小
-	Progress int64  `json:"progress"` // 已下载大小
-	Status   string `json:"status"`   // 层级状态：downloading, extracting, verifying, complete
+	ID       string `json:"id"`       // ID
+	Size     int64  `json:"size"`     // 
+	Progress int64  `json:"progress"` // 
+	Status   string `json:"status"`   // Status：downloading, extracting, verifying, complete
 }
 
-// ImageStatus 镜像状态信息
+// ImageStatus Image status info
 type ImageStatus struct {
-	Exists       bool                    `json:"exists"`        // 镜像是否存在
-	Pulling      bool                    `json:"pulling"`       // 是否正在拉取
-	Ready        bool                    `json:"ready"`         // 是否准备就绪
-	Error        string                  `json:"error"`         // 错误信息
-	CurrentLayer string                  `json:"current_layer"` // 当前下载的层级
-	Layers       map[string]*LayerStatus `json:"layers"`        // 所有层级的状态
+	Exists       bool                    `json:"exists"`        // YesNo
+	Pulling      bool                    `json:"pulling"`       // YesNo
+	Ready        bool                    `json:"ready"`         // YesNo
+	Error        string                  `json:"error"`         // Error
+	CurrentLayer string                  `json:"current_layer"` // 
+	Layers       map[string]*LayerStatus `json:"layers"`        // Status
 }
 
-// imagePullState 单镜像拉取状态
+// imagePullState Status
 type imagePullState struct {
 	pulling      bool
 	currentLayer string
@@ -53,7 +53,7 @@ type imagePullState struct {
 	mu           sync.RWMutex
 }
 
-// 全局镜像状态管理（按镜像隔离）
+// Status（）
 var imagePullStates = &sync.Map{} // map[string]*imagePullState
 
 func getImagePullState(imageName string) *imagePullState {
@@ -69,11 +69,11 @@ func cleanupImagePullState(imageName string) {
 	imagePullStates.Delete(imageName)
 }
 
-// PullImageWithProgress 拉取Docker镜像并显示进度
-// imageName: 镜像名称
-// 返回: 错误信息
+// PullImageWithProgress Docker
+// imageName: Image name
+// : Error
 func (dm *DockerManager) PullImageWithProgress(imageName string) error {
-	utils.Info("开始拉取Docker镜像", zap.String("image", imageName))
+	utils.Info("On Docker ", zap.String("image", imageName))
 
 	state := getImagePullState(imageName)
 	state.mu.Lock()
@@ -82,7 +82,7 @@ func (dm *DockerManager) PullImageWithProgress(imageName string) error {
 	state.layers = make(map[string]*LayerStatus)
 	state.mu.Unlock()
 
-	// 确保在函数结束时清理状态
+	// Status
 	defer func() {
 		state := getImagePullState(imageName)
 		state.mu.Lock()
@@ -93,19 +93,19 @@ func (dm *DockerManager) PullImageWithProgress(imageName string) error {
 		cleanupImagePullState(imageName)
 	}()
 
-	// 拉取镜像
+	// 
 	reader, err := dm.client.ImagePull(dm.ctx, imageName, image.PullOptions{})
 	if err != nil {
-		return fmt.Errorf("拉取Docker镜像失败: %v", err)
+		return fmt.Errorf(" Docker : %v", err)
 	}
 	defer reader.Close()
 
-	// 读取并显示拉取进度
+	// 
 	buffer := make([]byte, 1024)
 	for {
 		n, err := reader.Read(buffer)
 		if n > 0 {
-			// 解析JSON进度信息
+			// JSON
 			progress := string(buffer[:n])
 			lines := strings.Split(progress, "\n")
 
@@ -119,12 +119,12 @@ func (dm *DockerManager) PullImageWithProgress(imageName string) error {
 					state := getImagePullState(imageName)
 					state.mu.Lock()
 
-					// 处理层级信息
+					// 
 					layerID := progressInfo.ID
 					if layerID != "" {
 						state.currentLayer = layerID
 
-						// 确保层级存在
+						// 
 						if state.layers[layerID] == nil {
 							state.layers[layerID] = &LayerStatus{
 								ID:       layerID,
@@ -134,7 +134,7 @@ func (dm *DockerManager) PullImageWithProgress(imageName string) error {
 							}
 						}
 
-						// 更新层级大小信息
+						// 
 						if progressInfo.ProgressDetail != nil {
 							if progressInfo.ProgressDetail.Total > 0 {
 								state.layers[layerID].Size = progressInfo.ProgressDetail.Total
@@ -144,14 +144,14 @@ func (dm *DockerManager) PullImageWithProgress(imageName string) error {
 							}
 						}
 
-						// 如果ProgressDetail中没有大小信息，尝试从Progress字符串中解析
+						// ProgressDetail，Progress
 						if state.layers[layerID].Size == 0 && progressInfo.Progress != "" {
 							if size := parseSizeFromProgress(progressInfo.Progress); size > 0 {
 								state.layers[layerID].Size = size
 							}
 						}
 
-						// 更新层级状态
+						// Status
 						if strings.Contains(progressInfo.Status, "Downloading") {
 							state.layers[layerID].Status = "downloading"
 						} else if strings.Contains(progressInfo.Status, "Extracting") {
@@ -160,11 +160,11 @@ func (dm *DockerManager) PullImageWithProgress(imageName string) error {
 							state.layers[layerID].Status = "verifying"
 						} else if strings.Contains(progressInfo.Status, "Pull complete") || strings.Contains(progressInfo.Status, "complete") {
 							state.layers[layerID].Status = "complete"
-							// 完成时，如果没有大小信息，设置一个默认值
+							// ，，Settings
 							if state.layers[layerID].Size == 0 {
 								state.layers[layerID].Size = state.layers[layerID].Progress
 								if state.layers[layerID].Size == 0 {
-									state.layers[layerID].Size = 1024 * 1024 // 默认1MB
+									state.layers[layerID].Size = 1024 * 1024 // 1MB
 								}
 							}
 							state.layers[layerID].Progress = state.layers[layerID].Size
@@ -173,9 +173,9 @@ func (dm *DockerManager) PullImageWithProgress(imageName string) error {
 
 					state.mu.Unlock()
 
-					// 打印进度到控制台
+					// 
 					if strings.Contains(progressInfo.Status, "Downloading") || strings.Contains(progressInfo.Status, "Extracting") {
-						// 进度显示静默（避免日志刷屏）
+						// （）
 					}
 				}
 			}
@@ -184,34 +184,34 @@ func (dm *DockerManager) PullImageWithProgress(imageName string) error {
 			break
 		}
 		if err != nil {
-			return fmt.Errorf("读取镜像拉取进度失败: %v", err)
+			return fmt.Errorf(" : %v", err)
 		}
 	}
 
-	utils.Info("Docker镜像拉取成功", zap.String("image", imageName))
+	utils.Info("Docker Success", zap.String("image", imageName))
 
 	return nil
 }
 
-// ImageExists 检查Docker镜像是否存在
-// imageName: 镜像名称
-// 返回: 是否存在和错误信息
+// ImageExists DockerYesNo
+// imageName: Image name
+// : YesNoError
 func (dm *DockerManager) ImageExists(imageName string) (bool, error) {
-	// 尝试获取镜像信息
+	// Image information
 	_, err := dm.client.ImageInspect(dm.ctx, imageName)
 	if err != nil {
 		if errdefs.IsNotFound(err) {
-			return false, nil // 镜像不存在
+			return false, nil // 
 		}
-		return false, fmt.Errorf("检查Docker镜像失败: %v", err)
+		return false, fmt.Errorf(" Docker : %v", err)
 	}
 
 	return true, nil
 }
 
-// GetImageStatus 获取镜像状态和进度信息
-// imageName: 镜像名称
-// 返回: 镜像状态信息
+// GetImageStatus Get image status
+// imageName: Image name
+// : Image status info
 func (dm *DockerManager) GetImageStatus(imageName string) *ImageStatus {
 	status := &ImageStatus{
 		Exists:       false,
@@ -222,10 +222,10 @@ func (dm *DockerManager) GetImageStatus(imageName string) *ImageStatus {
 		Layers:       make(map[string]*LayerStatus),
 	}
 
-	// 检查镜像是否存在
+	// YesNo
 	exists, err := dm.ImageExists(imageName)
 	if err != nil {
-		status.Error = fmt.Sprintf("检查镜像失败: %v", err)
+		status.Error = fmt.Sprintf(" : %v", err)
 		return status
 	}
 
@@ -235,14 +235,14 @@ func (dm *DockerManager) GetImageStatus(imageName string) *ImageStatus {
 		return status
 	}
 
-	// 检查是否正在拉取中
+	// YesNo
 	state := getImagePullState(imageName)
 	state.mu.RLock()
 	status.Pulling = state.pulling
 	if status.Pulling {
 		status.CurrentLayer = state.currentLayer
 
-		// 复制层级状态
+		// Status
 		if layers := state.layers; layers != nil {
 			for layerID, layerStatus := range layers {
 				status.Layers[layerID] = &LayerStatus{
@@ -259,7 +259,7 @@ func (dm *DockerManager) GetImageStatus(imageName string) *ImageStatus {
 	return status
 }
 
-// IsImagePulling 检查镜像是否正在拉取中
+// IsImagePulling YesNo
 func IsImagePulling(imageName string) bool {
 	state := getImagePullState(imageName)
 	state.mu.RLock()
@@ -268,71 +268,71 @@ func IsImagePulling(imageName string) bool {
 	return pulling
 }
 
-// WaitForImage 等待镜像拉取完成（已废弃，请使用 GetImageStatus）
-// imageName: 镜像名称
-// timeout: 超时时间（秒）
-// 返回: 是否成功和错误信息
+// WaitForImage （， GetImageStatus）
+// imageName: Image name
+// timeout: （）
+// : YesNoSuccessError
 func (dm *DockerManager) WaitForImage(imageName string, timeout int) (bool, error) {
-	utils.Info("等待镜像拉取完成", zap.String("image", imageName))
+	utils.Info(" ", zap.String("image", imageName))
 
-	// 每秒检查一次镜像是否存在
+	// YesNo
 	for i := 0; i < timeout; i++ {
 		exists, err := dm.ImageExists(imageName)
 		if err != nil {
-			return false, fmt.Errorf("检查镜像失败: %v", err)
+			return false, fmt.Errorf(" : %v", err)
 		}
 
 		if exists {
-			utils.Info("镜像已准备就绪", zap.String("image", imageName))
+			utils.Info(" ", zap.String("image", imageName))
 			return true, nil
 		}
 
-		// 检查是否正在拉取中
+		// YesNo
 		state := getImagePullState(imageName)
 		state.mu.RLock()
 		pulling := state.pulling
 		state.mu.RUnlock()
 		if pulling {
-			utils.Debug("镜像正在拉取中，继续等待", zap.String("image", imageName))
+			utils.Debug(" ， ", zap.String("image", imageName))
 		}
 
-		// 等待1秒后再次检查
+		// 1
 		time.Sleep(1 * time.Second)
 	}
 
-	return false, fmt.Errorf("等待镜像 %s 超时（%d秒）", imageName, timeout)
+	return false, fmt.Errorf("  %s  （%d ）", imageName, timeout)
 }
 
-// parseSizeFromProgress 从进度字符串中解析大小信息
-// progress: 进度字符串，如 "1.5MB/2.0MB"
-// 返回: 解析出的大小（字节）
+// parseSizeFromProgress 
+// progress: ， "1.5MB/2.0MB"
+// : （）
 func parseSizeFromProgress(progress string) int64 {
-	// 移除空格
+	// 
 	progress = strings.TrimSpace(progress)
 
-	// 查找 "/" 分隔符
+	//  "/" 
 	parts := strings.Split(progress, "/")
 	if len(parts) != 2 {
 		return 0
 	}
 
-	// 解析总大小部分
+	// 
 	totalStr := strings.TrimSpace(parts[1])
 	return parseSizeString(totalStr)
 }
 
-// CheckImageUpdate 检查镜像是否有更新
-// imageName: 镜像名称
-// 返回: 是否有更新和错误信息
+// Check ImageUpdate YesNo
+// imageName: Image name
+// : YesNoError
 func (dm *DockerManager) CheckImageUpdate(imageName string) (bool, error) {
-	// 获取本地镜像的完整信息（包含 RepoDigests）
+	// （ RepoDigests）
 	imageInspect, err := dm.client.ImageInspect(dm.ctx, imageName)
 	if err != nil {
-		// 如果本地镜像不存在，认为有更新（需要下载）
+		// ，（）
 		if errdefs.IsNotFound(err) {
 			return true, nil
 		}
-		return false, fmt.Errorf("获取本地镜像信息失败: %v", err)
+		return false, fmt.Errorf(" Image information : %v", err)
 	}
 
 	// Use Docker Distribution API to inspect remote manifest digest
@@ -367,9 +367,9 @@ func (dm *DockerManager) CheckImageUpdate(imageName string) (bool, error) {
 	return hasUpdate, nil
 }
 
-// GetImageInfo 获取本地镜像详细信息
-// imageName: 镜像名称
-// 返回: 镜像信息和错误信息
+// GetImageInfo 
+// imageName: Image name
+// : Image informationError
 func (dm *DockerManager) GetImageInfo(imageName string) (*ImageInfo, error) {
 	imageInspect, err := dm.client.ImageInspect(dm.ctx, imageName)
 	if err != nil {
@@ -384,45 +384,45 @@ func (dm *DockerManager) GetImageInfo(imageName string) (*ImageInfo, error) {
 	}, nil
 }
 
-// ImageInfo 镜像信息结构体
+// ImageInfo Image information
 type ImageInfo struct {
-	ID      string   `json:"id"`      // 镜像ID
-	Tags    []string `json:"tags"`    // 镜像标签
-	Size    int64    `json:"size"`    // 镜像大小
-	Created string   `json:"created"` // 创建时间
+	ID      string   `json:"id"`      // ID
+	Tags    []string `json:"tags"`    // 
+	Size    int64    `json:"size"`    // 
+	Created string   `json:"created"` // Created at
 }
 
-// RemoveOldImage 删除旧版本镜像
-// imageName: 镜像名称
-// keepLatest: 是否保留最新版本
-// 返回: 错误信息
+// RemoveOldImage Delete
+// imageName: Image name
+// keepLatest: YesNo
+// : Error
 func (dm *DockerManager) RemoveOldImage(imageName string, keepLatest bool) error {
 	if !keepLatest {
-		// 删除指定镜像
+		// Delete
 		_, err := dm.client.ImageRemove(dm.ctx, imageName, image.RemoveOptions{
 			Force:         true,
 			PruneChildren: true,
 		})
 		if err != nil {
-			return fmt.Errorf("删除镜像失败: %v", err)
+			return fmt.Errorf("Delete : %v", err)
 		}
-		utils.Info("镜像已删除", zap.String("image", imageName))
+		utils.Info(" Delete", zap.String("image", imageName))
 	} else {
-		utils.Debug("保留最新镜像，跳过删除")
+		utils.Debug(" ， Delete")
 	}
 
 	return nil
 }
 
-// GetContainersByImage 获取使用指定镜像的所有容器
-// imageName: 镜像名称
-// 返回: 容器信息列表和错误信息
+// GetContainersByImage 
+// imageName: Image name
+// : Error
 func (dm *DockerManager) GetContainersByImage(imageName string) ([]ContainerInfo, error) {
 	containers, err := dm.client.ContainerList(dm.ctx, container.ListOptions{
 		All: true,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("获取容器列表失败: %v", err)
+		return nil, fmt.Errorf(" : %v", err)
 	}
 
 	var result []ContainerInfo
@@ -441,22 +441,22 @@ func (dm *DockerManager) GetContainersByImage(imageName string) ([]ContainerInfo
 	return result, nil
 }
 
-// ContainerInfo 容器信息结构体
+// ContainerInfo 
 type ContainerInfo struct {
-	ID     string `json:"id"`     // 容器ID
-	Name   string `json:"name"`   // 容器名称
-	Image  string `json:"image"`  // 镜像名称
-	Status string `json:"status"` // 容器状态
-	State  string `json:"state"`  // 容器状态
+	ID     string `json:"id"`     // ID
+	Name   string `json:"name"`   // 
+	Image  string `json:"image"`  // Image name
+	Status string `json:"status"` // Status
+	State  string `json:"state"`  // Status
 }
 
-// GetImageHistory 获取镜像历史信息
-// imageName: 镜像名称
-// 返回: 历史信息和错误信息
+// GetImageHistory 
+// imageName: Image name
+// : Error
 func (dm *DockerManager) GetImageHistory(imageName string) ([]ImageHistoryEntry, error) {
 	history, err := dm.client.ImageHistory(dm.ctx, imageName)
 	if err != nil {
-		return nil, fmt.Errorf("获取镜像历史失败: %v", err)
+		return nil, fmt.Errorf(" : %v", err)
 	}
 
 	var result []ImageHistoryEntry
@@ -473,22 +473,22 @@ func (dm *DockerManager) GetImageHistory(imageName string) ([]ImageHistoryEntry,
 	return result, nil
 }
 
-// ImageHistoryEntry 镜像历史条目
+// ImageHistoryEntry 
 type ImageHistoryEntry struct {
-	ID        string `json:"id"`         // 层ID
-	Created   int64  `json:"created"`    // 创建时间
-	CreatedBy string `json:"created_by"` // 创建命令
-	Size      int64  `json:"size"`       // 层大小
-	Comment   string `json:"comment"`    // 注释
+	ID        string `json:"id"`         // ID
+	Created   int64  `json:"created"`    // Created at
+	CreatedBy string `json:"created_by"` // Create
+	Size      int64  `json:"size"`       // 
+	Comment   string `json:"comment"`    // 
 }
 
-// parseSizeString 解析大小字符串
-// sizeStr: 大小字符串，如 "2.0MB", "1.5GB"
-// 返回: 字节数
+// parseSizeString 
+// sizeStr: ， "2.0MB", "1.5GB"
+// : 
 func parseSizeString(sizeStr string) int64 {
 	sizeStr = strings.ToLower(strings.TrimSpace(sizeStr))
 
-	// 移除单位
+	// 
 	var multiplier int64 = 1
 	if strings.HasSuffix(sizeStr, "kb") {
 		multiplier = 1024
@@ -504,7 +504,7 @@ func parseSizeString(sizeStr string) int64 {
 		sizeStr = strings.TrimSuffix(sizeStr, "b")
 	}
 
-	// 解析数字
+	// 
 	if size, err := strconv.ParseFloat(sizeStr, 64); err == nil {
 		return int64(size * float64(multiplier))
 	}

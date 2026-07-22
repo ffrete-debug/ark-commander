@@ -7,15 +7,15 @@ import (
 )
 
 const (
-	// 配置文件名常量
+	// Configuration file name constants
 	GameUserSettingsFileName = "GameUserSettings.ini"
 	GameIniFileName          = "Game.ini"
 
-	// 配置文件目录 - 适配新的ASE服务器镜像路径
+	// Configuration directory - adapted for new ASE server image path
 	ConfigDirectory = "Config/WindowsServer"
 )
 
-// GetDefaultGameUserSettings 获取默认的GameUserSettings.ini配置
+// GetDefaultGameUserSettings returns the default GameUserSettings.ini configuration
 func GetDefaultGameUserSettings(serverName, mapName string, maxPlayers int) string {
 	return fmt.Sprintf(`[ServerSettings]
 SessionName=%s
@@ -26,14 +26,14 @@ MaxPlayers=%d
 SessionName=%s
 
 [MessageOfTheDay]
-Message=欢迎来到 %s ARK 服务器！
+Message=Welcome to %s ARK Server!
 
 [/Script/Engine.GameSession]
 MaxPlayers=%d
 `, serverName, maxPlayers, serverName, serverName, maxPlayers)
 }
 
-// GetDefaultGameIni 获取默认的Game.ini配置
+// GetDefaultGameIni returns the default Game.ini configuration
 func GetDefaultGameIni() string {
 	return `[/script/shootergame.shootergamemode]
 bUseSingleplayerSettings=false
@@ -49,38 +49,39 @@ MaxNumberOfPlayersInTribe=0
 DifficultyOffset=1.0
 OverrideOfficialDifficulty=5.0
 
-# 资源重生倍率
+# Resource respawn rate
 ResourcesRespawnPeriodMultiplier=1.0
 
-# 驯服相关设置
+# Taming related settings
 TamingSpeedMultiplier=1.0
 DinoCharacterFoodDrainMultiplier=1.0
 DinoCharacterStaminaDrainMultiplier=1.0
 DinoCharacterHealthRecoveryMultiplier=1.0
 DinoCountMultiplier=1.0
 
-# 经验值倍率
+# Experience rate
 XPMultiplier=1.0
 PlayerCharacterWaterDrainMultiplier=1.0
 PlayerCharacterFoodDrainMultiplier=1.0
 PlayerCharacterStaminaDrainMultiplier=1.0
 PlayerCharacterHealthRecoveryMultiplier=1.0
 
-# 收集倍率
+# Harvest rate
 HarvestAmountMultiplier=1.0
 HarvestHealthMultiplier=1.0
 
-# 白天/夜晚时间流逝速度
+# Day/night cycle speed
 DayCycleSpeedScale=1.0
 NightTimeSpeedScale=1.0
 
-# 结构相关
+# Structure settings
 StructureResistanceMultiplier=1.0
 StructureDamageMultiplier=1.0
 StructureDamageRepairCooldown=180
+
 PvEStructureDecayPeriodMultiplier=1.0
 
-# PvP相关设置
+# PvP related settings
 bPvEDisableFriendlyFire=False
 bEnablePvPGamma=False
 bDisableFriendlyFire=False
@@ -88,10 +89,10 @@ bAllowFlyerCarryPvE=True
 `
 }
 
-// ValidateINIContent 验证INI内容的基本格式
+// ValidateINIContent validates basic INI content format
 func ValidateINIContent(content string) error {
 	if content == "" {
-		return nil // 空内容也是有效的
+		return nil // Empty content is valid
 	}
 
 	lines := strings.Split(content, "\n")
@@ -99,24 +100,24 @@ func ValidateINIContent(content string) error {
 	for i, line := range lines {
 		line = strings.TrimSpace(line)
 
-		// 跳过空行和注释
+		// Skip empty lines and comments
 		if line == "" || strings.HasPrefix(line, "#") || strings.HasPrefix(line, ";") {
 			continue
 		}
 
-		// 检查section格式
+		// Check section format
 		if strings.HasPrefix(line, "[") {
 			if !strings.HasSuffix(line, "]") {
-				return fmt.Errorf("第%d行：section格式错误，缺少闭合括号", i+1)
+				return fmt.Errorf("Line %d: section format error, missing closing bracket", i+1)
 			}
 			continue
 		}
 
-		// 检查键值对格式
+		// Check key-value pair format
 		if strings.Contains(line, "=") {
 			parts := strings.SplitN(line, "=", 2)
 			if len(parts) != 2 || strings.TrimSpace(parts[0]) == "" {
-				return fmt.Errorf("第%d行：键值对格式错误", i+1)
+				return fmt.Errorf("Line %d: key-value pair format error", i+1)
 			}
 			continue
 		}
@@ -125,20 +126,20 @@ func ValidateINIContent(content string) error {
 	return nil
 }
 
-// GetServerConfigPath 获取服务器配置文件目录路径
+// GetServerConfigPath returns the server configuration directory path
 func GetServerConfigPath(serverID uint) string {
 	serverFolder := GetServerFolderPath(serverID)
 	return filepath.Join(serverFolder, ConfigDirectory)
 }
 
-// GetConfigFilePath 获取配置文件的完整路径
+// GetConfigFilePath returns the full path to a configuration file
 func GetConfigFilePath(serverID uint, fileName string) string {
 	configPath := GetServerConfigPath(serverID)
 	return filepath.Join(configPath, fileName)
 }
 
-// GenerateGameModIdsEnv 生成GameModIds环境变量
-// 如果GameModIds为空，返回空字符串
+// GenerateGameModIdsEnv generates the GameModIds environment variable
+// Returns empty string if GameModIds is empty
 func GenerateGameModIdsEnv(gameModIds string) string {
 	if gameModIds == "" {
 		return ""

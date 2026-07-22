@@ -17,7 +17,7 @@ export function LanguageSwitcher() {
   const [currentLocale, setCurrentLocale] = useState<Locale>(serverLocale as Locale);
 
   useEffect(() => {
-    // 同步客户端和服务端的语言设置
+    // Settings
     const clientLocale = getClientLocale();
     if (clientLocale !== serverLocale) {
       setCurrentLocale(clientLocale);
@@ -25,11 +25,11 @@ export function LanguageSwitcher() {
   }, [serverLocale]);
 
   const changeLocale = (nextLocale: Locale) => {
-    // 设置cookie
+    // Setcookie
     setClientLocale(nextLocale);
     setCurrentLocale(nextLocale);
 
-    // 刷新页面以应用新语言
+    // 
     window.location.reload();
   };
 
@@ -45,7 +45,7 @@ export function LanguageSwitcher() {
           English
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => changeLocale('zh')} disabled={currentLocale === 'zh'}>
-          简体中文
+           
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -66,7 +66,7 @@ export default function ServerEditPage() {
       setSaving(true);
       await updateServer(serverId, formData);
       setSuccess(tServers('serverUpdateSuccess'));
-      // 可选：保存成功后跳转回服务器列表
+      // ：SaveSuccessServer list
       // router.push('/servers');
     } catch {
       setError(tServers('serverUpdateError'));

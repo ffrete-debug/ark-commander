@@ -272,7 +272,7 @@ export function GameUserSettingsEditor({ value, onChange }: GameUserSettingsEdit
 
 
   const parseTextToVisual = useCallback((content: string) => {
-    // 首先初始化默认配置
+    // Initialize
     const defaultConfig: Record<string, string | number | boolean> = {};
     getAllGameUserSettingsCategories().forEach(categoryKey => {
       const section = gameUserSettingsParams[categoryKey];
@@ -292,31 +292,31 @@ export function GameUserSettingsEditor({ value, onChange }: GameUserSettingsEdit
     defaultConfig.Duration = 30;
 
     if (!content) {
-      // 如果没有内容，直接使用默认配置
+      // If，
       setVisualConfig(defaultConfig);
       return;
     }
 
     try {
       const values = extractConfigValues(content);
-      // 合并默认配置和解析出的配置
+      // 
       const mergedConfig = { ...defaultConfig, ...values };
       setVisualConfig(mergedConfig);
     } catch (error) {
-      console.error('解析配置文件失败:', error);
-      // 解析失败时使用默认配置
+      console.error(' :', error);
+      // Parse
       setVisualConfig(defaultConfig);
     }
   }, [tDefaultValues]);
 
-  // 组件初始化时设置默认配置
+  // InitializeSettings
   useEffect(() => {
     parseTextToVisual('');
   }, [parseTextToVisual]);
 
   useEffect(() => {
     setTextContent(value || '');
-    // 解析后端传来的配置数据到可视化配置
+    // Parse
     if (value) {
       parseTextToVisual(value);
     }
@@ -329,12 +329,12 @@ export function GameUserSettingsEditor({ value, onChange }: GameUserSettingsEdit
     lines.forEach(line => {
       line = line.trim();
 
-      // 处理section
+      // Handlesection
       if (line.startsWith('[') && line.endsWith(']')) {
         return;
       }
 
-      // 跳过注释和空行
+      // 
       if (!line || line.startsWith(';') || !line.includes('=')) {
         return;
       }
@@ -344,7 +344,7 @@ export function GameUserSettingsEditor({ value, onChange }: GameUserSettingsEdit
       const keyName = key.trim();
 
       if (keyName && value !== undefined) {
-        // 尝试解析为布尔值
+        // 
         if (value.toLowerCase() === 'true') {
           values[keyName] = true;
         } else if (value.toLowerCase() === 'false') {
@@ -533,7 +533,7 @@ export function GameUserSettingsEditor({ value, onChange }: GameUserSettingsEdit
       setTextContent(iniContent);
       onChange?.(iniContent);
     } catch (error) {
-      console.error('同步可视化配置到文本失败:', error);
+      console.error(' :', error);
     }
   }, [onChange, tDefaultValues]);
 
@@ -553,23 +553,23 @@ export function GameUserSettingsEditor({ value, onChange }: GameUserSettingsEdit
 
     try {
       if (mode === 'text' && editMode === 'visual') {
-        // 从可视化模式切换到文本模式：将可视化配置同步到文本
+        // From ：
         syncVisualToText();
       } else if (mode === 'visual' && editMode === 'text') {
-        // 从文本模式切换到可视化模式：将文本解析到可视化配置
+        // From ：
         parseTextToVisual(textContent);
       }
 
       setEditMode(mode);
     } catch (error) {
-      console.error('模式切换同步失败:', error);
+      console.error(' :', error);
     }
   };
 
   const handleVisualChange = (paramKey: string, value: string | number | boolean) => {
     setVisualConfig(prev => {
       const newConfig = { ...prev, [paramKey]: value };
-      // 自动同步到文本内容并通知父组件
+      // 
       setTimeout(() => {
         syncVisualToTextWithConfig(newConfig);
       }, 0);

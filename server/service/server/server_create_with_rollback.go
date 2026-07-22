@@ -10,35 +10,35 @@ import (
 	"go.uber.org/zap"
 )
 
-// CreateServerWithRollback 创建服务器（带完整回滚机制）
-// 如果任何步骤失败，会自动清理已创建的所有资源
+// CreateServerWithRollback CreateServers（）
+// ，Create
 func (s *ServerService) CreateServerWithRollback(userID uint, req models.ServerRequest) (*models.ServerResponse, error) {
-	// 创建回滚管理器
+	// Create
 	rollback := docker_manager.NewRollbackManager()
 	var err error
 
-	// 使用 defer 确保发生错误时执行回滚
+	//  defer Error
 	defer func() {
 		if err != nil && rollback.Count() > 0 {
-			utils.Warn("服务器创建失败，开始执行回滚", zap.Error(err))
+			utils.Warn("ServersCreate ，On ", zap.Error(err))
 			if rollbackErr := rollback.Rollback(); rollbackErr != nil {
-				utils.Error("回滚过程中发生错误", zap.Error(rollbackErr))
+				utils.Error(" Error", zap.Error(rollbackErr))
 			}
 		}
 	}()
 
-	utils.Info("开始创建服务器（带回滚保护）",
+	utils.Info("On CreateServers（ ）",
 		zap.String("identifier", req.Identifier),
 		zap.Uint("user_id", userID))
 
-	// 步骤1: 检查服务器标识是否已存在
+	// 1: ServersYesNo
 	var existingServer models.Server
 	if checkErr := database.DB.Where("identifier = ? AND user_id = ?", req.Identifier, userID).First(&existingServer).Error; checkErr == nil {
-		err = fmt.Errorf("服务器标识已存在")
+		err = fmt.Errorf("Server identifier already exists")
 		return nil, err
 	}
 
-	// 步骤2: 设置默认值
+	// 2: Settings
 	if req.Map == "" {
 		req.Map = "TheIsland"
 	}
@@ -50,20 +50,20 @@ func (s *ServerService) CreateServerWithRollback(userID uint, req models.ServerR
 		req.AutoRestart = &defaultVal
 	}
 
-	// 步骤3: 开始数据库事务
+	// 3: On
 	tx := database.DB.Begin()
 	if tx.Error != nil {
-		err = fmt.Errorf("数据库事务启动失败: %w", tx.Error)
+		err = fmt.Errorf(" Start : %w", tx.Error)
 		return nil, err
 	}
 
-	// 添加回滚操作：回滚数据库事务
-	rollback.AddAction("database", "transaction", "回滚数据库事务", func() error {
+	// ：
+	rollback.AddAction("database", "transaction", " ", func() error {
 		tx.Rollback()
 		return nil
 	})
 
-	// 步骤4: 创建服务器记录
+	// 4: CreateServers
 	server := models.Server{
 		Identifier:    req.Identifier,
 		SessionName:   req.SessionName,
@@ -83,7 +83,7 @@ func (s *ServerService) CreateServerWithRollback(userID uint, req models.ServerR
 	if req.ServerArgs != nil {
 		argsJson, marshalErr := json.Marshal(req.ServerArgs)
 		if marshalErr != nil {
-			err = fmt.Errorf("启动参数格式错误: %w", marshalErr)
+			err = fmt.Errorf("Start Error: %w", marshalErr)
 			return nil, err
 		}
 		server.ServerArgsJSON = string(argsJson)
@@ -92,18 +92,18 @@ func (s *ServerService) CreateServerWithRollback(userID uint, req models.ServerR
 	}
 
 	if createErr := tx.Create(&server).Error; createErr != nil {
-		err = fmt.Errorf("服务器创建失败: %w", createErr)
+		err = fmt.Errorf("ServersCreate : %w", createErr)
 		return nil, err
 	}
 
-	utils.Info("服务器记录创建成功", zap.Uint("server_id", server.ID))
+	utils.Info("Servers Created successfully", zap.Uint("server_id", server.ID))
 
-	// 添加回滚操作：删除服务器记录
+	// ：Delete server
 	serverID := server.ID
-	rollback.AddAction("database", fmt.Sprintf("server_%d", serverID), "删除服务器记录", func() error {
+	rollback.AddAction("database", fmt.Sprintf("server_%d", serverID), "Delete server ", func() error {
 		return database.DB.Unscoped().Delete(&models.Server{}, serverID).Error
 	})
 
-	// 继续下一部分...
+	// ...
 	return s.createServerContinue(userID, &server, req, tx, rollback)
 }

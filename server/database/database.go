@@ -16,22 +16,22 @@ var DB *gorm.DB
 func InitDB() {
 	var err error
 
-	// 连接SQLite数据库
+	// Connect to SQLite database
 	DB, err = gorm.Open(sqlite.Open(config.DBPath), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info),
 	})
 
 	if err != nil {
-		utils.Fatal("数据库连接失败", zap.Error(err))
+		utils.Fatal("Database connection failed", zap.Error(err))
 	}
 
-	// 自动迁移数据库结构
+	// Auto-migrate database schema
 	err = DB.AutoMigrate(&models.User{}, &models.Server{}, &models.AuditLog{})
 	if err != nil {
-		utils.Fatal("数据库迁移失败", zap.Error(err))
+		utils.Fatal("Database migration failed", zap.Error(err))
 	}
 
-	utils.Info("数据库初始化成功", zap.String("db_path", config.DBPath))
+	utils.Info("Database initialized successfully", zap.String("db_path", config.DBPath))
 }
 
 func GetDB() *gorm.DB {

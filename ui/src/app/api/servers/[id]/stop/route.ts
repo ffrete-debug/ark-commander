@@ -10,7 +10,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const authorization = headersList.get('authorization');
 
   if (!authorization) {
-    return NextResponse.json({ error: '未授权' }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   const config = {
@@ -23,6 +23,6 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return NextResponse.json(response.data);
   } catch (error: unknown) {
     const axiosError = error as { response?: { data?: { error?: string }, status?: number } };
-    return NextResponse.json({ error: axiosError.response?.data?.error || '请求失败' }, { status: axiosError.response?.status || 500 });
+    return NextResponse.json({ error: axiosError.response?.data?.error || 'Request failed' }, { status: axiosError.response?.status || 500 });
   }
 }

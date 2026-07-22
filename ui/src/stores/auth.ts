@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
-// 定义用户对象类型
+// Define user object type
 interface User {
   id: number;
   username: string;
@@ -10,17 +10,17 @@ interface User {
   created_at: string;
 }
 
-// 定义认证状态类型
+// Define auth state type
 interface AuthState {
   token: string | null;
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  isInitialized: boolean; // 添加初始化状态
+  isInitialized: boolean; // Add initialization state
   actions: AuthActions;
 }
 
-// 定义认证操作类型
+// Define auth actions type
 interface AuthActions {
   checkInit: () => Promise<boolean>;
   init: (credentials: Credentials) => Promise<{ success: boolean; message: string }>;
@@ -30,13 +30,13 @@ interface AuthActions {
   initFromStorage: () => void;
 }
 
-// 定义登录凭据类型
+// Define login credentials type
 interface Credentials {
   username?: string;
   password?: string;
 }
 
-// 定义API响应类型
+// Define API response type
 interface AuthResponse {
   token: string;
   user: User;
@@ -48,14 +48,14 @@ const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   isLoading: false,
   isAuthenticated: false,
-  isInitialized: false, // 初始化为false
+  isInitialized: false, // Initialize to false
   actions: {
     checkInit: async () => {
       try {
         const response = await axios.get('/api/auth/check-init');
         return response.data.initialized;
       } catch (error) {
-        console.error('检查初始化状态失败:', error);
+        console.error('Failed to check initialization status:', error);
         return false;
       }
     },
@@ -69,9 +69,9 @@ const useAuthStore = create<AuthState>((set, get) => ({
         return { success: true, message };
       } catch (error) {
         if (axios.isAxiosError(error) && error.response) {
-          return { success: false, message: error.response.data?.error || '初始化失败' };
+          return { success: false, message: error.response.data?.error || 'Initialization failed' };
         }
-        return { success: false, message: '初始化失败' };
+        return { success: false, message: 'Initialization failed' };
       } finally {
         set({ isLoading: false });
       }
@@ -86,9 +86,9 @@ const useAuthStore = create<AuthState>((set, get) => ({
         return { success: true, message };
       } catch (error) {
         if (axios.isAxiosError(error) && error.response) {
-          return { success: false, message: error.response.data?.error || '登录失败' };
+          return { success: false, message: error.response.data?.error || 'Login failed' };
         }
-        return { success: false, message: '登录失败' };
+        return { success: false, message: 'Login failed' };
       } finally {
         set({ isLoading: false });
       }
@@ -102,7 +102,7 @@ const useAuthStore = create<AuthState>((set, get) => ({
         });
         set({ user: response.data.user });
       } catch (error) {
-        console.error('获取用户信息失败:', error);
+        console.error('Failed to get user info:', error);
         get().actions.logout();
       }
     },
@@ -115,7 +115,7 @@ const useAuthStore = create<AuthState>((set, get) => ({
       if (token) {
         const currentState = get();
         set({ token, isAuthenticated: true, isInitialized: true });
-        // 只有在用户信息不存在时才调用 getProfile
+        // Only call getProfile if user info is missing
         if (!currentState.user) {
           get().actions.getProfile();
         }

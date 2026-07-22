@@ -9,7 +9,7 @@ export async function GET() {
   const token = cookieStore.get('auth-token');
 
   if (!token) {
-    return NextResponse.json({ error: '未授权' }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   const config = {
@@ -23,7 +23,7 @@ export async function GET() {
   } catch (error: unknown) {
     const axiosError = error as { response?: { data?: { error?: string }, status?: number } };
     return NextResponse.json({
-      error: axiosError.response?.data?.error || '检查更新失败'
+      error: axiosError.response?.data?.error || 'Failed to check updates'
     }, { status: axiosError.response?.status || 500 });
   }
 }

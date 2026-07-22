@@ -6,7 +6,7 @@ export const defaultLocale: Locale = 'en';
 
 const LOCALE_COOKIE_NAME = 'NEXT_LOCALE';
 
-// 客户端获取语言
+// Get locale on client side
 export function getClientLocale(): Locale {
   if (typeof window === 'undefined') {
     return defaultLocale;
@@ -21,14 +21,14 @@ export function getClientLocale(): Locale {
   return defaultLocale;
 }
 
-// 客户端设置语言
+// Set locale on client side
 export function setClientLocale(locale: Locale) {
   if (typeof window === 'undefined') {
     return;
   }
   
   Cookies.set(LOCALE_COOKIE_NAME, locale, {
-    expires: 365, // 1年
+    expires: 365, // 1 year
     path: '/',
     sameSite: 'lax'
   });

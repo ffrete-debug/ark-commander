@@ -5,34 +5,34 @@ import (
 	"strings"
 )
 
-// ServerArgs ARK服务器启动参数结构
+// ServerArgs ARKServersStart
 type ServerArgs struct {
-	// 查询参数（以?开头的参数，不包含基础参数）
+	// （?On，）
 	QueryParams map[string]string `json:"query_params" gorm:"-"`
 
-	// 命令行参数（以-开头的参数）
+	// （-On）
 	CommandLineArgs map[string]interface{} `json:"command_line_args" gorm:"-"`
 
-	// 自定义参数（用户添加的其他参数）
+	// （User）
 	CustomArgs []string `json:"custom_args" gorm:"-"`
 }
 
-// ServerArgsRequest 启动参数请求结构
+// ServerArgsRequest Start
 type ServerArgsRequest struct {
 	QueryParams     map[string]string      `json:"query_params"`
 	CommandLineArgs map[string]interface{} `json:"command_line_args"`
 	CustomArgs      []string               `json:"custom_args"`
 }
 
-// ServerArgsResponse 启动参数响应结构
+// ServerArgsResponse Start
 type ServerArgsResponse struct {
 	QueryParams     map[string]string      `json:"query_params"`
 	CommandLineArgs map[string]interface{} `json:"command_line_args"`
 	CustomArgs      []string               `json:"custom_args"`
-	GeneratedArgs   string                 `json:"generated_args"` // 生成的完整启动参数字符串
+	GeneratedArgs   string                 `json:"generated_args"` // Start
 }
 
-// NewServerArgs 创建新的启动参数实例
+// NewServerArgs CreateStart
 func NewServerArgs() *ServerArgs {
 	return &ServerArgs{
 		QueryParams:     make(map[string]string),
@@ -41,14 +41,14 @@ func NewServerArgs() *ServerArgs {
 	}
 }
 
-// FromServer 从Server模型创建ServerArgs
+// FromServer ServerCreateServerArgs
 func FromServer(server Server) *ServerArgs {
 	args := NewServerArgs()
 
-	// 设置默认的查询参数（不包含基础参数，因为基础参数从Server模型获取）
+	// Settings（，Server）
 	args.QueryParams["listen"] = ""
 
-	// 设置默认的命令行参数
+	// Settings
 	args.CommandLineArgs["NoBattlEye"] = true
 	args.CommandLineArgs["servergamelog"] = true
 	args.CommandLineArgs["structurememopts"] = true
@@ -69,17 +69,17 @@ func FromServer(server Server) *ServerArgs {
 	return args
 }
 
-// GenerateArgsString 生成完整的启动参数字符串
-// 从服务器基础参数中获取：游戏端口、查询端口、RCON端口、管理员密码、地图、模组ID
-// 从启动参数中获取：其他自定义参数
+// GenerateArgsString Start
+// Servers：、Query Port、RCON Port、Password、Map、ID
+// Start：
 func (sa *ServerArgs) GenerateArgsString(server Server) string {
 	var queryParams []string
 	var commandLineParams []string
 
-	// 添加地图名称（从服务器基础参数获取）
+	// Map（Servers）
 	result := server.Map
 
-	// 添加基础查询参数（从服务器基础参数获取，不在启动参数中重复设置）
+	// （Servers，StartSettings）
 	queryParams = append(queryParams, "?listen")
 	queryParams = append(queryParams, fmt.Sprintf("?Port=%d", server.Port))
 	queryParams = append(queryParams, fmt.Sprintf("?QueryPort=%d", server.QueryPort))
@@ -88,7 +88,7 @@ func (sa *ServerArgs) GenerateArgsString(server Server) string {
 	queryParams = append(queryParams, fmt.Sprintf("?RCONPort=%d", server.RCONPort))
 	queryParams = append(queryParams, fmt.Sprintf("?ServerAdminPassword=%s", server.AdminPassword))
 
-	// 添加服务器名称（SessionName）
+	// Servers（SessionName）
 	if server.SessionName != "" {
 		queryParams = append(queryParams, fmt.Sprintf("?SessionName=%s", server.SessionName))
 	}
@@ -97,15 +97,15 @@ func (sa *ServerArgs) GenerateArgsString(server Server) string {
 		queryParams = append(queryParams, fmt.Sprintf("?GameModIds=%s", server.GameModIds))
 	}
 
-	// 添加自定义查询参数
+	// 
 	for key, value := range sa.QueryParams {
-		// 跳过基础参数，避免重复
+		// ，
 		if key == "listen" || key == "Port" || key == "QueryPort" || key == "MaxPlayers" ||
 			key == "RCONEnabled" || key == "RCONPort" || key == "ServerAdminPassword" || key == "GameModIds" {
 			continue
 		}
 
-		// 如果查询参数的值为空或为"False"，则不添加该参数
+		// "False"，
 		if value == "" || strings.ToLower(value) == "false" {
 			continue
 		}
@@ -113,7 +113,7 @@ func (sa *ServerArgs) GenerateArgsString(server Server) string {
 		queryParams = append(queryParams, fmt.Sprintf("?%s=%s", key, value))
 	}
 
-	// 添加命令行参数
+	// 
 	for key, value := range sa.CommandLineArgs {
 		switch v := value.(type) {
 		case bool:
@@ -124,9 +124,9 @@ func (sa *ServerArgs) GenerateArgsString(server Server) string {
 			if v != "" {
 				commandLineParams = append(commandLineParams, fmt.Sprintf("-%s=%s", key, v))
 			}
-			// 如果字符串为空，则不追加该参数
+			// ，
 		case int, int32, int64, float32, float64:
-			// 检查数值是否为0，如果是0则不追加该参数
+			// YesNo0，Yes0
 			if v != 0 {
 				commandLineParams = append(commandLineParams, fmt.Sprintf("-%s=%v", key, v))
 			}
@@ -135,22 +135,22 @@ func (sa *ServerArgs) GenerateArgsString(server Server) string {
 		}
 	}
 
-	// 添加集群ID（ClusterID）
+	// ID（ClusterID）
 	if server.ClusterID != "" {
 		commandLineParams = append(commandLineParams, fmt.Sprintf("-clusterid=%s", server.ClusterID))
 	}
 
-	// 添加自定义参数
+	// 
 	commandLineParams = append(commandLineParams, sa.CustomArgs...)
 
-	// 组合参数：地图 + 查询参数（无空格连接）+ 空格 + 命令行参数
+	// ：Map + （None）+  + 
 	if len(queryParams) > 0 {
 		result += strings.Join(queryParams, "")
 	}
 
 	if len(commandLineParams) > 0 {
 		if len(queryParams) > 0 {
-			result += " " // 查询参数和命令行参数之间加空格
+			result += " " // 
 		}
 		result += strings.Join(commandLineParams, " ")
 	}

@@ -1,8 +1,8 @@
-// 使用标准的Next.js导航，不再依赖next-intl的路径导航
+// Use standard Next.js navigation, no longer depends on next-intl path navigation
 export { redirect } from 'next/navigation';
 export { usePathname, useRouter } from 'next/navigation';
 
-// 重新导出Next.js的Link组件
+// Re-export Next.js Link component
 import NextLink from 'next/link';
 export const Link = NextLink;
 

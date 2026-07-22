@@ -8,7 +8,7 @@ export async function GET() {
   } catch (error: unknown) {
     const axiosError = error as { response?: { data?: { error?: string }, status?: number } };
     return NextResponse.json({
-      error: axiosError.response?.data?.error || '检查初始化状态失败'
+      error: axiosError.response?.data?.error || 'Failed to check initialization status'
     }, { status: axiosError.response?.status || 500 });
   }
 }

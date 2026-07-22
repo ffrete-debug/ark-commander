@@ -20,7 +20,7 @@ export function MapSelector({ value, onChange, label }: MapSelectorProps) {
   const [open, setOpen] = useState(false);
   const [searchValue, setSearchValue] = useState('');
 
-  // 预定义的地图选项
+  // Map
   const predefinedMaps = {
     'TheIsland': t('maps.TheIsland'),
     'TheCenter': t('maps.TheCenter'),
@@ -35,15 +35,15 @@ export function MapSelector({ value, onChange, label }: MapSelectorProps) {
     'Fjordur': t('maps.Fjordur')
   };
 
-  // 同步外部value变化
+  // value
   useEffect(() => {
-    // 当外部value变化时，重置搜索值
+    // value，Search
     if (!open) {
       setSearchValue('');
     }
   }, [value, open]);
 
-  // 过滤地图选项
+  // FilterMap
   const filteredMaps = Object.entries(predefinedMaps).filter(([key, displayName]) => {
     if (!searchValue) return true;
     const searchLower = searchValue.toLowerCase();
@@ -51,20 +51,20 @@ export function MapSelector({ value, onChange, label }: MapSelectorProps) {
       displayName.toLowerCase().includes(searchLower);
   });
 
-  // 处理地图选择
+  // HandleMap
   const handleMapSelect = (mapKey: string) => {
     onChange(mapKey);
     setOpen(false);
     setSearchValue('');
   };
 
-  // 清空选择
+  // 
   const handleClear = () => {
     onChange('');
     setSearchValue('');
   };
 
-  // 获取当前选中地图的显示名称
+  // GetMap
   const getDisplayName = (mapKey: string) => {
     return predefinedMaps[mapKey as keyof typeof predefinedMaps] || mapKey;
   };
@@ -143,7 +143,7 @@ export function MapSelector({ value, onChange, label }: MapSelectorProps) {
                 ))}
               </CommandGroup>
 
-              {/* 自定义地图选项 */}
+              {/*  Map  */}
               {searchValue && !Object.keys(predefinedMaps).includes(searchValue) && (
                 <CommandGroup heading={t('customMap') || 'Custom Map'}>
                   <CommandItem
@@ -165,7 +165,7 @@ export function MapSelector({ value, onChange, label }: MapSelectorProps) {
         </PopoverContent>
       </Popover>
 
-      {/* 显示当前选中地图的友好名称 */}
+      {/*  Map  */}
       {value && Object.keys(predefinedMaps).includes(value) && value !== getDisplayName(value) && (
         <div className="text-xs text-muted-foreground">
           {t('mapId')}: {value}

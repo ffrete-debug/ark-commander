@@ -7,44 +7,44 @@ import (
 )
 
 const (
-	// WorksDirectory 工作目录名称
+	// WorksDirectory name for server data
 	WorksDirectory = "Works"
 )
 
-// GetServerFolderPath 获取服务器文件夹路径
-// serverID: 服务器数据库ID
-// 返回: 服务器文件夹的绝对路径
+// GetServerFolderPath returns the server folder path
+// serverID: server database ID
+// Returns: absolute path to the server folder
 func GetServerFolderPath(serverID uint) string {
-	// 获取当前工作目录
+	// Get current working directory
 	currentDir, err := os.Getwd()
 	if err != nil {
-		// 如果获取失败，使用当前目录
+		// If failed, use current directory
 		currentDir = "."
 	}
 
-	// 构建路径: 当前目录/Works/服务器ID
+	// Build path: currentDir/Works/serverID
 	folderPath := filepath.Join(currentDir, WorksDirectory, fmt.Sprintf("%d", serverID))
 	return folderPath
 }
 
-// CreateServerFolder 创建服务器文件夹
-// serverID: 服务器数据库ID
-// 返回: 创建的文件夹路径和错误信息
+// CreateServerFolder creates the server folder
+// serverID: server database ID
+// Returns: created folder path and error
 func CreateServerFolder(serverID uint) (string, error) {
 	folderPath := GetServerFolderPath(serverID)
 
-	// 创建文件夹（包括父目录）
+	// Create folder (including parent directories)
 	err := os.MkdirAll(folderPath, 0755)
 	if err != nil {
-		return "", fmt.Errorf("创建服务器文件夹失败: %v", err)
+		return "", fmt.Errorf("Failed to create server folder: %v", err)
 	}
 
 	return folderPath, nil
 }
 
-// FolderExists 检查文件夹是否存在
-// folderPath: 文件夹路径
-// 返回: 文件夹是否存在
+// FolderExists checks if a folder exists
+// folderPath: path to check
+// Returns: whether the folder exists
 func FolderExists(folderPath string) bool {
 	info, err := os.Stat(folderPath)
 	if os.IsNotExist(err) {
@@ -53,29 +53,29 @@ func FolderExists(folderPath string) bool {
 	return info.IsDir()
 }
 
-// RemoveServerFolder 删除服务器文件夹
-// serverID: 服务器数据库ID
-// 返回: 错误信息
+// RemoveServerFolder removes the server folder
+// serverID: server database ID
+// Returns: error
 func RemoveServerFolder(serverID uint) error {
 	folderPath := GetServerFolderPath(serverID)
 
-	// 检查文件夹是否存在
+	// Check if folder exists
 	if !FolderExists(folderPath) {
-		return nil // 文件夹不存在，视为删除成功
+		return nil // Folder doesn't exist, consider it removed
 	}
 
-	// 删除文件夹及其内容
+	// Delete folder and its contents
 	err := os.RemoveAll(folderPath)
 	if err != nil {
-		return fmt.Errorf("删除服务器文件夹失败: %v", err)
+		return fmt.Errorf("Failed to delete server folder: %v", err)
 	}
 
 	return nil
 }
 
-// GetFolderSize 获取文件夹大小（字节）
-// folderPath: 文件夹路径
-// 返回: 文件夹大小和错误信息
+// GetFolderSize returns the folder size in bytes
+// folderPath: path to the folder
+// Returns: folder size and error
 func GetFolderSize(folderPath string) (int64, error) {
 	var size int64
 
@@ -92,8 +92,8 @@ func GetFolderSize(folderPath string) (int64, error) {
 	return size, err
 }
 
-// EnsureWorksDirectory 确保Works目录存在
-// 返回: Works目录路径和错误信息
+// EnsureWorksDirectory ensures the Works directory exists
+// Returns: Works directory path and error
 func EnsureWorksDirectory() (string, error) {
 	currentDir, err := os.Getwd()
 	if err != nil {
@@ -102,10 +102,10 @@ func EnsureWorksDirectory() (string, error) {
 
 	worksPath := filepath.Join(currentDir, WorksDirectory)
 
-	// 创建Works目录
+	// Create Works directory
 	err = os.MkdirAll(worksPath, 0755)
 	if err != nil {
-		return "", fmt.Errorf("创建Works目录失败: %v", err)
+		return "", fmt.Errorf("Failed to create Works directory: %v", err)
 	}
 
 	return worksPath, nil

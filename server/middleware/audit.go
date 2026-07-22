@@ -33,6 +33,6 @@ func (a *AuditLogger) Log(userID uint, action, resource, detail, ip string) {
 		CreatedAt: time.Now(),
 	}
 	if err := a.db.Create(&entry).Error; err != nil {
-		zap.L().Error("审计日志写入失败", zap.Error(err))
+		zap.L().Error("Audit log write failed", zap.Error(err))
 	}
 }

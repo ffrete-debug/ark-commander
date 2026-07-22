@@ -6,7 +6,7 @@ export const defaultLocale: Locale = 'en';
 
 const LOCALE_COOKIE_NAME = 'NEXT_LOCALE';
 
-// 服务端获取语言
+// Get locale on server side
 export async function getLocale(): Promise<Locale> {
   const cookieStore = await cookies();
   const locale = cookieStore.get(LOCALE_COOKIE_NAME)?.value;
@@ -18,11 +18,11 @@ export async function getLocale(): Promise<Locale> {
   return defaultLocale;
 }
 
-// 服务端设置语言
+// Set locale on server side
 export async function setServerLocale(locale: Locale) {
   const cookieStore = await cookies();
   cookieStore.set(LOCALE_COOKIE_NAME, locale, {
-    maxAge: 365 * 24 * 60 * 60, // 1年
+    maxAge: 365 * 24 * 60 * 60, // 1 year
     path: '/',
     sameSite: 'lax'
   });

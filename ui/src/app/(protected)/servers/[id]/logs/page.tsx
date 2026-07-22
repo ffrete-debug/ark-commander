@@ -32,12 +32,12 @@ export default function ServerLogsPage() {
       const response = await fetch(`/api/servers/${serverId}/logs?tail=${tailLines}`, {
         headers: { 'Authorization': `Bearer ${token}` },
       });
-      if (!response.ok) throw new Error('获取日志失败');
+      if (!response.ok) throw new Error('Failed to fetch logs');
       const data = await response.json();
       setLogs(data.data || '');
       setError('');
     } catch {
-      setError('获取日志失败');
+      setError('Failed to fetch logs');
     } finally {
       setLoading(false);
     }
@@ -48,7 +48,7 @@ export default function ServerLogsPage() {
       const srv = await serversActions.getServer(serverId);
       setServer(srv);
     } catch {
-      setError('获取服务器信息失败');
+      setError('Failed to get server info');
     }
   }, [serverId]);
 

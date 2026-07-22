@@ -7,7 +7,7 @@ export async function GET(request: Request) {
     const h = await headers();
     const auth = h.get('authorization');
     if (!auth) {
-      return NextResponse.json({ error: '未授权' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const url = new URL(request.url);

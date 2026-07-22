@@ -9,42 +9,42 @@ import (
 	"go.uber.org/zap"
 )
 
-// createDockerResources 创建 Docker 资源（卷和配置文件）
+// createDockerResources Create Docker （）
 func (s *ServerService) createDockerResources(userID uint, server *models.Server, req models.ServerRequest, dockerRollback *docker_manager.RollbackManager) (*models.ServerResponse, error) {
 	var err error
 
-	// 获取 Docker 管理器
+	//  Docker 
 	dockerManager, getErr := docker_manager.GetDockerManager()
 	if getErr != nil {
-		// Docker 管理器获取失败，需要删除数据库记录
+		// Docker ，Delete
 		database.DB.Unscoped().Delete(server)
-		return nil, fmt.Errorf("获取Docker管理器失败: %w", getErr)
+		return nil, fmt.Errorf(" Docker Manager : %w", getErr)
 	}
 
-	// 步骤1: 创建 Docker 卷
-	utils.Info("创建Docker卷", zap.Uint("server_id", server.ID))
+	// 1: Create Docker 
+	utils.Info("CreateDocker ", zap.Uint("server_id", server.ID))
 	volumeName, volErr := dockerManager.CreateVolume(server.ID)
 	if volErr != nil {
-		// 卷创建失败，删除数据库记录
+		// Volume creation failed，Delete
 		database.DB.Unscoped().Delete(server)
-		return nil, fmt.Errorf("创建Docker卷失败: %w", volErr)
+		return nil, fmt.Errorf("CreateDocker : %w", volErr)
 	}
 
-	utils.Info("Docker卷创建成功", zap.String("volume", volumeName))
+	utils.Info("Docker Created successfully", zap.String("volume", volumeName))
 
-	// 注册回滚操作：删除 Docker 卷
-	dockerRollback.AddAction("volume", volumeName, "删除Docker卷", func() error {
+	// ：Delete Docker 
+	dockerRollback.AddAction("volume", volumeName, "DeleteDocker ", func() error {
 		return dockerManager.RemoveVolume(server.ID)
 	})
 
-	// 步骤2: 处理配置文件
+	// 2: 
 	var gameUserSettings string
 	var gameIni string
 
 	if req.GameUserSettings != "" {
 		if validateErr := utils.ValidateINIContent(req.GameUserSettings); validateErr != nil {
-			err = fmt.Errorf("GameUserSettings.ini格式错误: %w", validateErr)
-			// 触发 Docker 回滚 + 删除数据库记录
+			err = fmt.Errorf("GameUserSettings.ini Error: %w", validateErr)
+			//  Docker  + Delete
 			database.DB.Unscoped().Delete(server)
 			return nil, err
 		}
@@ -55,7 +55,7 @@ func (s *ServerService) createDockerResources(userID uint, server *models.Server
 
 	if req.GameIni != "" {
 		if validateErr := utils.ValidateINIContent(req.GameIni); validateErr != nil {
-			err = fmt.Errorf("Game.ini格式错误: %w", validateErr)
+			err = fmt.Errorf("Game.ini Error: %w", validateErr)
 			database.DB.Unscoped().Delete(server)
 			return nil, err
 		}
@@ -64,25 +64,25 @@ func (s *ServerService) createDockerResources(userID uint, server *models.Server
 		gameIni = utils.GetDefaultGameIni()
 	}
 
-	// 步骤3: 写入配置文件
-	utils.Info("写入配置文件", zap.Uint("server_id", server.ID))
+	// 3: 
+	utils.Info(" ", zap.Uint("server_id", server.ID))
 	if writeErr := dockerManager.WriteConfigFile(server.ID, utils.GameUserSettingsFileName, gameUserSettings); writeErr != nil {
-		err = fmt.Errorf("写入GameUserSettings.ini失败: %w", writeErr)
+		err = fmt.Errorf(" GameUserSettings.ini : %w", writeErr)
 		database.DB.Unscoped().Delete(server)
 		return nil, err
 	}
 
 	if writeErr := dockerManager.WriteConfigFile(server.ID, utils.GameIniFileName, gameIni); writeErr != nil {
-		err = fmt.Errorf("写入Game.ini失败: %w", writeErr)
+		err = fmt.Errorf(" Game.ini : %w", writeErr)
 		database.DB.Unscoped().Delete(server)
 		return nil, err
 	}
 
-	utils.Info("服务器创建成功",
+	utils.Info("Server created successfully",
 		zap.Uint("server_id", server.ID),
 		zap.String("identifier", server.Identifier))
 
-	// 构建响应
+	// 
 	response := models.ServerResponse{
 		ID:            server.ID,
 		Identifier:    server.Identifier,
@@ -101,7 +101,7 @@ func (s *ServerService) createDockerResources(userID uint, server *models.Server
 		UpdatedAt:     server.UpdatedAt.Format("2006-01-02 15:04:05"),
 	}
 
-	// 读取配置文件内容
+	// 
 	if content, readErr := dockerManager.ReadConfigFile(server.ID, utils.GameUserSettingsFileName); readErr == nil {
 		response.GameUserSettings = content
 	}
@@ -109,7 +109,7 @@ func (s *ServerService) createDockerResources(userID uint, server *models.Server
 		response.GameIni = content
 	}
 
-	// 成功完成，清空 Docker 回滚操作
+	// Success， Docker 
 	dockerRollback.Clear()
 
 	return &response, nil

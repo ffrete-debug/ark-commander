@@ -8,7 +8,7 @@ export async function GET() {
     const authorization = headersList.get('authorization');
 
     if (!authorization) {
-      return NextResponse.json({ error: '未授权' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const response = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE}/profile`, {
@@ -20,7 +20,7 @@ export async function GET() {
   } catch (error: unknown) {
     const axiosError = error as { response?: { data?: { error?: string }, status?: number } };
     return NextResponse.json({
-      error: axiosError.response?.data?.error || '获取用户信息失败'
+      error: axiosError.response?.data?.error || 'Failed to get user info'
     }, { status: axiosError.response?.status || 500 });
   }
 }

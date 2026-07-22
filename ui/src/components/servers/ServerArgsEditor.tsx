@@ -29,14 +29,14 @@ export function ServerArgsEditor({ value, onChange }: ServerArgsEditorProps) {
   const paramCategories = getServerParamsByCategory();
   const [activeTab, setActiveTab] = useState<CategoryKey>('basic');
 
-  // 确保 value 有默认值
+  //  value 
   const safeValue = value || {
     query_params: {},
     command_line_args: {},
     custom_args: []
   };
 
-  // 获取有参数的分类
+  // Get
   const availableCategories = Object.entries(paramCategories)
     .filter(([_, params]) => params.length > 0)
     .map(([category]) => category as CategoryKey);
@@ -74,7 +74,7 @@ export function ServerArgsEditor({ value, onChange }: ServerArgsEditorProps) {
     const id = `${type}-${key}`;
     const currentValue = type === 'query' ? safeValue.query_params[key] : safeValue.command_line_args[key];
     
-    // 获取参数的翻译名称
+    // Get
     const paramDisplayName = type === 'query' 
       ? (tQueryParams.has(key) ? tQueryParams(key) : key)
       : (tCommandLineArgs.has(key) ? tCommandLineArgs(key) : key);

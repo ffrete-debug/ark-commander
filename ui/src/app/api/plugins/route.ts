@@ -8,7 +8,7 @@ export async function GET(request: Request) {
   try {
     const h = await headers();
     const auth = h.get('authorization');
-    if (!auth) return NextResponse.json({ error: '未授权' }, { status: 401 });
+    if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     const url = new URL(request.url);
     const res = await axios.get(`${getApiBase()}/plugins?${url.searchParams.toString()}`, {
       headers: { Authorization: auth },
@@ -17,7 +17,7 @@ export async function GET(request: Request) {
   } catch (e: unknown) {
     const ae = e as { response?: { data?: { error?: string }, status?: number } };
     return NextResponse.json(
-      { error: ae?.response?.data?.error || '请求失败' },
+      { error: ae?.response?.data?.error || ' ' },
       { status: ae?.response?.status || 500 }
     );
   }
@@ -27,7 +27,7 @@ export async function POST(request: Request) {
   try {
     const h = await headers();
     const auth = h.get('authorization');
-    if (!auth) return NextResponse.json({ error: '未授权' }, { status: 401 });
+    if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     const url = new URL(request.url);
     const action = url.searchParams.get('action') || 'upload';
     const serverId = url.searchParams.get('server_id');
@@ -56,7 +56,7 @@ export async function POST(request: Request) {
   } catch (e: unknown) {
     const ae = e as { response?: { data?: { error?: string }, status?: number } };
     return NextResponse.json(
-      { error: ae?.response?.data?.error || '请求失败' },
+      { error: ae?.response?.data?.error || ' ' },
       { status: ae?.response?.status || 500 }
     );
   }
@@ -66,7 +66,7 @@ export async function DELETE(request: Request) {
   try {
     const h = await headers();
     const auth = h.get('authorization');
-    if (!auth) return NextResponse.json({ error: '未授权' }, { status: 401 });
+    if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     const url = new URL(request.url);
     const res = await axios.delete(`${getApiBase()}/plugins/delete?${url.searchParams.toString()}`, {
       headers: { Authorization: auth },
@@ -75,7 +75,7 @@ export async function DELETE(request: Request) {
   } catch (e: unknown) {
     const ae = e as { response?: { data?: { error?: string }, status?: number } };
     return NextResponse.json(
-      { error: ae?.response?.data?.error || '请求失败' },
+      { error: ae?.response?.data?.error || ' ' },
       { status: ae?.response?.status || 500 }
     );
   }

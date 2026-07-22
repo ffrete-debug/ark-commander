@@ -11,15 +11,15 @@ import (
 var Logger *zap.Logger
 var SugaredLogger *zap.SugaredLogger
 
-// InitLogger 初始化全局日志记录器
+// InitLogger initializes the global logger
 func InitLogger() error {
-	// 从环境变量读取日志级别，默认为info
+	// Read log level from environment, default to info
 	logLevel := os.Getenv("LOG_LEVEL")
 	if logLevel == "" {
 		logLevel = "info"
 	}
 
-	// 从环境变量读取日志格式，默认为json
+	// Read log format from environment, default to json
 	logFormat := os.Getenv("LOG_FORMAT")
 	if logFormat == "" {
 		logFormat = "json"
@@ -28,7 +28,7 @@ func InitLogger() error {
 	var config zap.Config
 
 	if logFormat == "console" {
-		// 开发模式：人类可读的控制台输出
+		// Development mode: human-readable console output
 		config = zap.Config{
 			Level:       zap.NewAtomicLevelAt(parseLogLevel(logLevel)),
 			Development: false,
@@ -42,7 +42,7 @@ func InitLogger() error {
 				MessageKey:     "msg",
 				StacktraceKey:  "stacktrace",
 				LineEnding:     zapcore.DefaultLineEnding,
-				EncodeLevel:    zapcore.CapitalColorLevelEncoder, // 彩色输出
+				EncodeLevel:    zapcore.CapitalColorLevelEncoder, // Color output
 				EncodeTime:     zapcore.ISO8601TimeEncoder,
 				EncodeDuration: zapcore.StringDurationEncoder,
 				EncodeCaller:   zapcore.ShortCallerEncoder,
@@ -51,7 +51,7 @@ func InitLogger() error {
 			ErrorOutputPaths: []string{"stderr"},
 		}
 	} else {
-		// 生产模式：JSON格式（便于日志收集系统解析）
+		// Production mode: JSON format for log collection systems
 		config = zap.Config{
 			Level:       zap.NewAtomicLevelAt(parseLogLevel(logLevel)),
 			Development: false,
@@ -78,17 +78,17 @@ func InitLogger() error {
 	var err error
 	Logger, err = config.Build(
 		zap.AddCaller(),
-		zap.AddCallerSkip(1), // 跳过wrapper函数，显示实际调用位置
+		zap.AddCallerSkip(1), // Skip wrapper to show actual caller
 	)
 	if err != nil {
-		return fmt.Errorf("初始化日志失败: %w", err)
+		return fmt.Errorf("Failed to initialize logger: %w", err)
 	}
 
 	SugaredLogger = Logger.Sugar()
 	return nil
 }
 
-// parseLogLevel 解析日志级别
+// parseLogLevel parses the log level string
 func parseLogLevel(level string) zapcore.Level {
 	switch level {
 	case "debug":
@@ -108,14 +108,14 @@ func parseLogLevel(level string) zapcore.Level {
 	}
 }
 
-// Sync 刷新日志缓冲区（程序退出前调用）
+// Sync flushes the log buffer (call before application exit)
 func Sync() {
 	if Logger != nil {
 		_ = Logger.Sync()
 	}
 }
 
-// 便捷方法封装
+// Convenience wrappers
 
 func Debug(msg string, fields ...zap.Field) {
 	Logger.Debug(msg, fields...)
@@ -137,7 +137,7 @@ func Fatal(msg string, fields ...zap.Field) {
 	Logger.Fatal(msg, fields...)
 }
 
-// Sugared版本（支持printf风格）
+// Sugared versions (printf-style)
 
 func Debugf(template string, args ...interface{}) {
 	SugaredLogger.Debugf(template, args...)

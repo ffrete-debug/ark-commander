@@ -11,7 +11,7 @@ const docTemplate = `{
         "title": "{{.Title}}",
         "termsOfService": "http://swagger.io/terms/",
         "contact": {
-            "name": "API支持",
+            "name": "API ",
             "url": "http://www.swagger.io/support",
             "email": "support@swagger.io"
         },
@@ -26,7 +26,7 @@ const docTemplate = `{
     "paths": {
         "/auth/check-init": {
             "get": {
-                "description": "检查系统是否已经初始化过用户",
+                "description": " YesNo Initialize User",
                 "consumes": [
                     "application/json"
                 ],
@@ -34,12 +34,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "认证"
+                    "Authentication"
                 ],
-                "summary": "检查系统初始化状态",
+                "summary": " Initialization status",
                 "responses": {
                     "200": {
-                        "description": "初始化状态",
+                        "description": "Initialization status",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -52,7 +52,7 @@ const docTemplate = `{
         },
         "/auth/init": {
             "post": {
-                "description": "创建第一个管理员用户，只能在系统未初始化时调用",
+                "description": "Create User， Initialize ",
                 "consumes": [
                     "application/json"
                 ],
@@ -60,12 +60,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "认证"
+                    "Authentication"
                 ],
-                "summary": "初始化系统用户",
+                "summary": "Initialize User",
                 "parameters": [
                     {
-                        "description": "用户信息",
+                        "description": "User ",
                         "name": "user",
                         "in": "body",
                         "required": true,
@@ -76,14 +76,14 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "初始化成功",
+                        "description": "InitializeSuccess",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求错误",
+                        "description": "Invalid request",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -92,7 +92,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "服务器错误",
+                        "description": "Server error",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -105,7 +105,7 @@ const docTemplate = `{
         },
         "/auth/login": {
             "post": {
-                "description": "使用用户名和密码登录系统",
+                "description": " User PasswordLogin ",
                 "consumes": [
                     "application/json"
                 ],
@@ -113,12 +113,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "认证"
+                    "Authentication"
                 ],
-                "summary": "用户登录",
+                "summary": "UserLogin",
                 "parameters": [
                     {
-                        "description": "登录凭据",
+                        "description": "Login credentials",
                         "name": "credentials",
                         "in": "body",
                         "required": true,
@@ -129,14 +129,14 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "登录成功",
+                        "description": "LoginSuccess",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求错误",
+                        "description": "Invalid request",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -145,7 +145,7 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "认证失败",
+                        "description": "Authentication ",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -154,7 +154,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "服务器错误",
+                        "description": "Server error",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -172,7 +172,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "获取使用指定镜像的服务器列表",
+                "description": " Server list",
                 "consumes": [
                     "application/json"
                 ],
@@ -180,13 +180,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "镜像管理"
+                    "Image Management"
                 ],
-                "summary": "获取影响的服务器列表",
+                "summary": " Server list",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "镜像名称",
+                        "description": "Image name",
                         "name": "image_name",
                         "in": "query",
                         "required": true
@@ -194,14 +194,14 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "服务器列表",
+                        "description": "Server list",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求错误",
+                        "description": "Invalid request",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -210,7 +210,7 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "未授权",
+                        "description": "Unauthorized",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -219,7 +219,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "服务器错误",
+                        "description": "Server error",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -237,7 +237,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "检查所有管理的镜像是否有新版本",
+                "description": "Check all managed images for new versions",
                 "consumes": [
                     "application/json"
                 ],
@@ -245,12 +245,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "镜像管理"
+                    "Image Management"
                 ],
-                "summary": "检查镜像是否有更新",
+                "summary": " YesNo ",
                 "responses": {
                     "200": {
-                        "description": "镜像更新状态映射",
+                        "description": "Image update status map",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -259,7 +259,7 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "未授权",
+                        "description": "Unauthorized",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -268,7 +268,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "服务器错误",
+                        "description": "Server error",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -286,7 +286,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "用户主动触发镜像下载操作",
+                "description": "User ",
                 "consumes": [
                     "application/json"
                 ],
@@ -294,12 +294,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "镜像管理"
+                    "Image Management"
                 ],
-                "summary": "手动拉取Docker镜像",
+                "summary": " Docker ",
                 "parameters": [
                     {
-                        "description": "镜像信息 {\\",
+                        "description": "Image information {\\",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -313,14 +313,14 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "拉取状态",
+                        "description": " Status",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求错误",
+                        "description": "Invalid request",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -329,7 +329,7 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "未授权",
+                        "description": "Unauthorized",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -338,7 +338,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "服务器错误",
+                        "description": "Server error",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -356,7 +356,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "获取ARK服务器镜像的状态信息（镜像在后台异步拉取）",
+                "description": "Get image status (images pulled asynchronously)",
                 "consumes": [
                     "application/json"
                 ],
@@ -364,19 +364,19 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "服务器管理"
+                    "Server Management"
                 ],
-                "summary": "获取镜像状态",
+                "summary": "Get image status",
                 "responses": {
                     "200": {
-                        "description": "镜像状态信息",
+                        "description": "Image status info",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "401": {
-                        "description": "未授权",
+                        "description": "Unauthorized",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -385,7 +385,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "服务器错误",
+                        "description": "Server error",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -403,7 +403,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "更新指定镜像并处理相关容器",
+                "description": "Update the specified image and handle affected containers",
                 "consumes": [
                     "application/json"
                 ],
@@ -411,12 +411,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "镜像管理"
+                    "Image Management"
                 ],
-                "summary": "更新Docker镜像",
+                "summary": "Update Docker image",
                 "parameters": [
                     {
-                        "description": "镜像信息 {\\",
+                        "description": "Image information {\\",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -430,14 +430,14 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "更新状态",
+                        "description": "Update status",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求错误",
+                        "description": "Invalid request",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -446,7 +446,7 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "未授权",
+                        "description": "Unauthorized",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -455,7 +455,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "服务器错误",
+                        "description": "Server error",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -473,7 +473,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "获取当前登录用户的基本信息",
+                "description": " LoginUser ",
                 "consumes": [
                     "application/json"
                 ],
@@ -481,12 +481,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "用户"
+                    "User"
                 ],
-                "summary": "获取当前用户信息",
+                "summary": " User ",
                 "responses": {
                     "200": {
-                        "description": "用户信息",
+                        "description": "User ",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -495,7 +495,7 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "未授权",
+                        "description": "Unauthorized",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -513,7 +513,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "获取当前用户的所有服务器列表",
+                "description": "Get all servers for the current user",
                 "consumes": [
                     "application/json"
                 ],
@@ -521,12 +521,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "服务器管理"
+                    "Server Management"
                 ],
-                "summary": "获取服务器列表",
+                "summary": "Get server list",
                 "responses": {
                     "200": {
-                        "description": "服务器列表",
+                        "description": "Server list",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -538,7 +538,7 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "未授权",
+                        "description": "Unauthorized",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -547,7 +547,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "服务器错误",
+                        "description": "Server error",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -563,7 +563,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "创建一个新的ARK服务器配置",
+                "description": "Create a new ARK server configuration",
                 "consumes": [
                     "application/json"
                 ],
@@ -571,12 +571,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "服务器管理"
+                    "Server Management"
                 ],
-                "summary": "创建新服务器",
+                "summary": "Create a new server",
                 "parameters": [
                     {
-                        "description": "服务器配置",
+                        "description": "Server configuration",
                         "name": "server",
                         "in": "body",
                         "required": true,
@@ -587,7 +587,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "创建成功",
+                        "description": "Created successfully",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -596,7 +596,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "请求错误",
+                        "description": "Invalid request",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -605,7 +605,7 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "未授权",
+                        "description": "Unauthorized",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -614,7 +614,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "服务器错误",
+                        "description": "Server error",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -632,7 +632,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "根据ID获取指定服务器的详细信息（包括配置文件内容）",
+                "description": "Get detailed server info including config files",
                 "consumes": [
                     "application/json"
                 ],
@@ -640,13 +640,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "服务器管理"
+                    "Server Management"
                 ],
-                "summary": "获取服务器详情",
+                "summary": "Get server details",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "服务器ID",
+                        "description": "Server ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -654,7 +654,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "服务器信息（包含配置文件）",
+                        "description": "Server info (including config files)",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -663,7 +663,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "请求错误",
+                        "description": "Invalid request",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -672,7 +672,7 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "未授权",
+                        "description": "Unauthorized",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -681,7 +681,7 @@ const docTemplate = `{
                         }
                     },
                     "404": {
-                        "description": "服务器不存在",
+                        "description": "Server not found",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -697,7 +697,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "更新指定服务器的配置信息（包括配置文件）",
+                "description": "Update server configuration including config files",
                 "consumes": [
                     "application/json"
                 ],
@@ -705,19 +705,19 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "服务器管理"
+                    "Server Management"
                 ],
-                "summary": "更新服务器配置",
+                "summary": "Update server configuration",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "服务器ID",
+                        "description": "Server ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "更新的服务器配置（可包含配置文件内容）",
+                        "description": " Server configuration（ ）",
                         "name": "server",
                         "in": "body",
                         "required": true,
@@ -728,7 +728,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "更新成功",
+                        "description": " Success",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -737,7 +737,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "请求错误",
+                        "description": "Invalid request",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -746,7 +746,7 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "未授权",
+                        "description": "Unauthorized",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -755,7 +755,7 @@ const docTemplate = `{
                         }
                     },
                     "404": {
-                        "description": "服务器不存在",
+                        "description": "Server not found",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -764,7 +764,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "服务器错误",
+                        "description": "Server error",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -780,7 +780,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "删除指定的服务器配置（仅允许删除已停止的服务器）",
+                "description": "Delete server config (only stopped servers)",
                 "consumes": [
                     "application/json"
                 ],
@@ -788,13 +788,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "服务器管理"
+                    "Server Management"
                 ],
-                "summary": "删除服务器",
+                "summary": "Delete server",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "服务器ID",
+                        "description": "Server ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -802,7 +802,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "删除成功",
+                        "description": "DeleteSuccess",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -811,7 +811,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "请求错误",
+                        "description": "Invalid request",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -820,7 +820,7 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "未授权",
+                        "description": "Unauthorized",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -829,7 +829,7 @@ const docTemplate = `{
                         }
                     },
                     "404": {
-                        "description": "服务器不存在",
+                        "description": "Server not found",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -838,7 +838,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "服务器错误",
+                        "description": "Server error",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -856,7 +856,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "获取指定服务器的RCON连接信息（包括密码）",
+                "description": "Get RCON connection info including password",
                 "consumes": [
                     "application/json"
                 ],
@@ -864,13 +864,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "服务器管理"
+                    "Server Management"
                 ],
-                "summary": "获取服务器RCON信息",
+                "summary": "Get server RCON info",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "服务器ID",
+                        "description": "Server ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -878,14 +878,14 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "RCON信息",
+                        "description": "RCON info",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求错误",
+                        "description": "Invalid request",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -894,7 +894,7 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "未授权",
+                        "description": "Unauthorized",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -903,7 +903,7 @@ const docTemplate = `{
                         }
                     },
                     "404": {
-                        "description": "服务器不存在",
+                        "description": "Server not found",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -921,7 +921,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "使用新镜像重建指定服务器的容器",
+                "description": "Rebuild container for server using new image",
                 "consumes": [
                     "application/json"
                 ],
@@ -929,13 +929,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "服务器管理"
+                    "Server Management"
                 ],
-                "summary": "重建服务器容器",
+                "summary": "Rebuild server container",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "服务器ID",
+                        "description": "Server ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -943,7 +943,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "重建状态",
+                        "description": " Status",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -952,7 +952,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "请求错误",
+                        "description": "Invalid request",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -961,7 +961,7 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "未授权",
+                        "description": "Unauthorized",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -970,7 +970,7 @@ const docTemplate = `{
                         }
                     },
                     "404": {
-                        "description": "服务器不存在",
+                        "description": "Server not found",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -979,7 +979,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "服务器错误",
+                        "description": "Server error",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -997,7 +997,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "启动指定的ARK服务器",
+                "description": "Start the specified ARK server",
                 "consumes": [
                     "application/json"
                 ],
@@ -1005,13 +1005,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "服务器管理"
+                    "Server Management"
                 ],
-                "summary": "启动服务器",
+                "summary": "Start server",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "服务器ID",
+                        "description": "Server ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -1019,7 +1019,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "启动成功",
+                        "description": "StartSuccess",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -1028,7 +1028,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "请求错误",
+                        "description": "Invalid request",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -1037,7 +1037,7 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "未授权",
+                        "description": "Unauthorized",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -1046,7 +1046,7 @@ const docTemplate = `{
                         }
                     },
                     "404": {
-                        "description": "服务器不存在",
+                        "description": "Server not found",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -1055,7 +1055,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "服务器错误",
+                        "description": "Server error",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -1073,7 +1073,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "停止指定的ARK服务器",
+                "description": "Stop the specified ARK server",
                 "consumes": [
                     "application/json"
                 ],
@@ -1081,13 +1081,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "服务器管理"
+                    "Server Management"
                 ],
-                "summary": "停止服务器",
+                "summary": "Stop server",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "服务器ID",
+                        "description": "Server ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -1095,7 +1095,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "停止成功",
+                        "description": "StopSuccess",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -1104,7 +1104,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "请求错误",
+                        "description": "Invalid request",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -1113,7 +1113,7 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "未授权",
+                        "description": "Unauthorized",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -1122,7 +1122,7 @@ const docTemplate = `{
                         }
                     },
                     "404": {
-                        "description": "服务器不存在",
+                        "description": "Server not found",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -1131,7 +1131,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "服务器错误",
+                        "description": "Server error",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -1148,19 +1148,19 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "command_line_args": {
-                    "description": "命令行参数（以-开头的参数）",
+                    "description": " （ -On ）",
                     "type": "object",
                     "additionalProperties": true
                 },
                 "custom_args": {
-                    "description": "自定义参数（用户添加的其他参数）",
+                    "description": " （User ）",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "query_params": {
-                    "description": "查询参数（以?开头的参数，不包含基础参数）",
+                    "description": " （ ?On ， ）",
                     "type": "object",
                     "additionalProperties": {
                         "type": "string"
@@ -1203,23 +1203,23 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "auto_restart": {
-                    "description": "是否自动重启（可选）",
+                    "description": "YesNo Restart（ ）",
                     "type": "boolean"
                 },
                 "cluster_id": {
-                    "description": "集群ID",
+                    "description": " ID",
                     "type": "string"
                 },
                 "game_ini": {
-                    "description": "Game.ini 文件内容",
+                    "description": "Game.ini  ",
                     "type": "string"
                 },
                 "game_mod_ids": {
-                    "description": "游戏模组ID列表，用逗号分隔",
+                    "description": " ID ， ",
                     "type": "string"
                 },
                 "game_user_settings": {
-                    "description": "配置文件内容（可选）",
+                    "description": " （ ）",
                     "type": "string"
                 },
                 "identifier": {
@@ -1229,7 +1229,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "max_players": {
-                    "description": "最大玩家数",
+                    "description": "Max Players ",
                     "type": "integer",
                     "maximum": 200,
                     "minimum": 1
@@ -1250,7 +1250,7 @@ const docTemplate = `{
                     "minimum": 1
                 },
                 "server_args": {
-                    "description": "启动参数（可选）",
+                    "description": "Start （ ）",
                     "allOf": [
                         {
                             "$ref": "#/definitions/models.ServerArgsRequest"
@@ -1258,7 +1258,7 @@ const docTemplate = `{
                     ]
                 },
                 "session_name": {
-                    "description": "服务器名称",
+                    "description": "Servers ",
                     "type": "string"
                 }
             }
@@ -1273,25 +1273,25 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "cluster_id": {
-                    "description": "集群ID",
+                    "description": " ID",
                     "type": "string"
                 },
                 "created_at": {
                     "type": "string"
                 },
                 "game_ini": {
-                    "description": "Game.ini 文件内容",
+                    "description": "Game.ini  ",
                     "type": "string"
                 },
                 "game_mod_ids": {
                     "type": "string"
                 },
                 "game_user_settings": {
-                    "description": "配置文件内容",
+                    "description": " ",
                     "type": "string"
                 },
                 "generated_args": {
-                    "description": "生成的完整启动参数字符串",
+                    "description": " Start ",
                     "type": "string"
                 },
                 "id": {
@@ -1304,7 +1304,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "max_players": {
-                    "description": "最大玩家数",
+                    "description": "Max Players ",
                     "type": "integer"
                 },
                 "port": {
@@ -1317,7 +1317,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "server_args": {
-                    "description": "启动参数",
+                    "description": "Start ",
                     "allOf": [
                         {
                             "$ref": "#/definitions/models.ServerArgs"
@@ -1325,7 +1325,7 @@ const docTemplate = `{
                     ]
                 },
                 "session_name": {
-                    "description": "服务器名称",
+                    "description": "Servers ",
                     "type": "string"
                 },
                 "status": {
@@ -1349,19 +1349,19 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "cluster_id": {
-                    "description": "集群ID",
+                    "description": " ID",
                     "type": "string"
                 },
                 "game_ini": {
-                    "description": "Game.ini 文件内容",
+                    "description": "Game.ini  ",
                     "type": "string"
                 },
                 "game_mod_ids": {
-                    "description": "游戏模组ID列表，用逗号分隔",
+                    "description": " ID ， ",
                     "type": "string"
                 },
                 "game_user_settings": {
-                    "description": "配置文件内容（可选）",
+                    "description": " （ ）",
                     "type": "string"
                 },
                 "identifier": {
@@ -1371,7 +1371,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "max_players": {
-                    "description": "最大玩家数",
+                    "description": "Max Players ",
                     "type": "integer",
                     "maximum": 200,
                     "minimum": 1
@@ -1392,7 +1392,7 @@ const docTemplate = `{
                     "minimum": 1
                 },
                 "server_args": {
-                    "description": "启动参数（可选）",
+                    "description": "Start （ ）",
                     "allOf": [
                         {
                             "$ref": "#/definitions/models.ServerArgsRequest"
@@ -1400,7 +1400,7 @@ const docTemplate = `{
                     ]
                 },
                 "session_name": {
-                    "description": "服务器名称",
+                    "description": "Servers ",
                     "type": "string"
                 }
             }
@@ -1448,8 +1448,8 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "localhost:8080",
 	BasePath:         "/api",
 	Schemes:          []string{},
-	Title:            "ARK服务器管理器 API",
-	Description:      "基于Gin+Gorm的ARK服务器管理系统API文档",
+	Title:            "ARKServer Management  API",
+	Description:      " Gin+Gorm ARKServer Management API ",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

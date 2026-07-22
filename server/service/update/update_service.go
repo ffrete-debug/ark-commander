@@ -27,7 +27,7 @@ func (s *UpdateService) StartUpdate(serverID uint, step models.UpdateStep, messa
 		StartedAt: time.Now(),
 	}
 	if err := s.db.Create(&status).Error; err != nil {
-		zap.L().Error("创建更新状态失败", zap.Error(err))
+		zap.L().Error("Failed to create update status", zap.Error(err))
 		return
 	}
 	s.hub.BroadcastToServer(serverID, status)

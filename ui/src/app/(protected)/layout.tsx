@@ -25,31 +25,31 @@ export default function ProtectedLayout({
   }, [initFromStorage, isInitialized]);
 
   useEffect(() => {
-    // 只有在初始化完成且未认证时才跳转
+    // Only redirect when initialized and not authenticated
     if (isInitialized && !isAuthenticated) {
       router.replace('/login');
     }
   }, [isAuthenticated, isInitialized, router]);
 
-  // 如果还未初始化，显示加载状态
+  // Show loading state when not yet initialized
   if (!isInitialized) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p>初始化中...</p>
+          <p>Initializing...</p>
         </div>
       </div>
     );
   }
 
-  // 如果初始化完成但未认证，显示验证状态（很快会跳转）
+  // Show verification state when initialized but not authenticated (will redirect shortly)
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p>验证身份中...</p>
+          <p>Verifying...</p>
         </div>
       </div>
     );
@@ -100,7 +100,7 @@ export default function ProtectedLayout({
                 onClick={logout}
                 className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium"
               >
-                退出登录
+                Log out
               </button>
             </div>
           </div>

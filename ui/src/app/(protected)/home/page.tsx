@@ -18,24 +18,24 @@ export default function HomePage() {
     const { getImageStatus } = serversActions;
     const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-    // 获取镜像状态
+    // Get image status
     const refreshImageStatus = useCallback(async () => {
         try {
             await getImageStatus();
         } catch (error) {
-            console.error('获取镜像状态失败:', error);
+            console.error('Failed to get image status:', error);
         }
     }, [getImageStatus]);
 
-    // 处理手动下载
+    // Handle manual download
     const handleManualDownload = async () => {
         if (!imageStatus?.images) return;
 
-        // 找到第一个未就绪的镜像
+        // Find the first image that is not ready
         const notReadyImage = Object.entries(imageStatus.images).find(([, status]) => !status.ready);
 
         if (!notReadyImage) {
-            console.log('所有镜像都已就绪');
+            console.log('All images are ready');
             return;
         }
 
@@ -43,7 +43,7 @@ export default function HomePage() {
         await handleDownloadImage(imageName);
     };
 
-    // 处理单个镜像下载
+    // Handle single image download
     const handleDownloadImage = async (imageName: string) => {
         try {
             const token = Cookies.get('auth-token');
@@ -59,19 +59,19 @@ export default function HomePage() {
             });
 
             if (!response.ok) {
-                throw new Error('下载镜像失败');
+                throw new Error('Failed to download image');
             }
 
-            console.log(`镜像 ${imageName} 开始下载`);
+            console.log(`Image ${imageName} started downloading`);
 
-            // 开始轮询状态
+            // Start polling status
             startPolling();
         } catch (error) {
-            console.error('下载镜像失败:', error);
+            console.error('Failed to download image:', error);
         }
     };
 
-    // 处理单个镜像更新
+    // Handle single image update
     const handleUpdateImage = async (imageName: string) => {
         try {
             const token = Cookies.get('auth-token');
@@ -87,19 +87,19 @@ export default function HomePage() {
             });
 
             if (!response.ok) {
-                throw new Error('更新镜像失败');
+                throw new Error('Failed to update image');
             }
 
-            console.log(`镜像 ${imageName} 开始更新`);
+            console.log(`Image ${imageName} started updating`);
 
-            // 开始轮询状态
+            // Start polling status
             startPolling();
         } catch (error) {
-            console.error('更新镜像失败:', error);
+            console.error('Failed to update image:', error);
         }
     };
 
-    // 处理检查更新
+    // Handle check updates
     const handleCheckUpdates = async () => {
         try {
             const token = Cookies.get('auth-token');
@@ -110,19 +110,19 @@ export default function HomePage() {
             });
 
             if (!response.ok) {
-                throw new Error('检查更新失败');
+                throw new Error('Failed to check updates');
             }
 
-            console.log('镜像更新检查完成');
+            console.log('Image update check completed');
 
-            // 刷新镜像状态以显示更新结果
+            // Refresh image status to show update results
             await refreshImageStatus();
         } catch (error) {
-            console.error('检查更新失败:', error);
+            console.error('Failed to check updates:', error);
         }
     };
 
-    // 开始轮询状态
+    // Start polling status
     const startPolling = () => {
         if (pollingIntervalRef.current) {
             clearInterval(pollingIntervalRef.current);
@@ -131,14 +131,14 @@ export default function HomePage() {
         pollingIntervalRef.current = setInterval(async () => {
             await refreshImageStatus();
 
-            // 如果没有镜像在拉取中，停止轮询
+            // Stop polling if no images are pulling
             if (!imageStatus?.any_pulling) {
                 stopPolling();
             }
         }, 2000);
     };
 
-    // 停止轮询
+    // Stop polling
     const stopPolling = () => {
         if (pollingIntervalRef.current) {
             clearInterval(pollingIntervalRef.current);
@@ -156,7 +156,7 @@ export default function HomePage() {
 
     return (
         <div className="w-full max-w-none py-8 space-y-8">
-            {/* 欢迎标题区域 */}
+            {/* Welcome title area */}
             <Card>
                 <CardContent className="p-8">
                     <div className="text-center space-y-6">
@@ -179,7 +179,7 @@ export default function HomePage() {
                 </CardContent>
             </Card>
 
-            {/* 镜像管理区域 */}
+            {/* Image management area */}
             <Card>
                 <CardHeader>
                     <CardTitle className="text-2xl font-semibold text-gray-900">
@@ -199,13 +199,13 @@ export default function HomePage() {
                     ) : (
                         <div className="text-center py-8">
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                            <p className="mt-2 text-gray-600">加载镜像状态中...</p>
+                            <p className="mt-2 text-gray-600">Loading image status...</p>
                         </div>
                     )}
                 </CardContent>
             </Card>
 
-            {/* 功能卡片网格 */}
+            {/* Feature card grid */}
             <Card>
                 <CardHeader>
                     <CardTitle className="text-2xl font-semibold text-gray-900">
