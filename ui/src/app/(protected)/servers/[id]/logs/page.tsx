@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, ArrowLeft, RefreshCw, Pause, Play, Trash2 } from 'lucide-react';
+import { Loader2, ArrowLeft, RefreshCw, Pause, Play, Trash2, Map } from 'lucide-react';
 import { serversActions } from '@/stores/servers';
 import { Server } from '@/stores/servers';
 import Cookies from 'js-cookie';
@@ -97,6 +97,28 @@ export default function ServerLogsPage() {
           </span>
         )}
       </div>
+
+      {server && (
+        <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 bg-gray-50 rounded-lg px-4 py-2">
+          <div className="flex items-center gap-1">
+            <Map className="h-4 w-4" />
+            <span className="font-medium">{t('card.map')}:</span>
+            <span>{server.map}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="font-medium">{t('card.serverPort')}:</span>
+            <span>{server.port}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="font-medium">{t('edit.queryPort')}:</span>
+            <span>{server.query_port}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="font-medium">{t('card.maxPlayers')}:</span>
+            <span>{server.max_players}</span>
+          </div>
+        </div>
+      )}
 
       <Card>
         <CardHeader className="py-3">
