@@ -9,6 +9,7 @@ import { useImageStatus, serversActions } from '@/stores/servers';
 import { ImageStatus } from '@/components/docker/ImageStatus';
 import { useEffect, useRef, useCallback } from 'react';
 import { Server } from 'lucide-react';
+import Cookies from 'js-cookie';
 
 export default function HomePage() {
     const t = useTranslations('home');
@@ -45,10 +46,12 @@ export default function HomePage() {
     // 处理单个镜像下载
     const handleDownloadImage = async (imageName: string) => {
         try {
+            const token = Cookies.get('auth-token');
             const response = await fetch('/api/images/pull', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
                 },
                 body: JSON.stringify({
                     image_name: imageName
@@ -71,10 +74,12 @@ export default function HomePage() {
     // 处理单个镜像更新
     const handleUpdateImage = async (imageName: string) => {
         try {
+            const token = Cookies.get('auth-token');
             const response = await fetch('/api/images/update', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
                 },
                 body: JSON.stringify({
                     image_name: imageName
@@ -97,7 +102,12 @@ export default function HomePage() {
     // 处理检查更新
     const handleCheckUpdates = async () => {
         try {
-            const response = await fetch('/api/images/check-updates');
+            const token = Cookies.get('auth-token');
+            const response = await fetch('/api/images/check-updates', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
 
             if (!response.ok) {
                 throw new Error('检查更新失败');
