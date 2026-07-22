@@ -152,3 +152,12 @@ Veja [CHANGELOG.md](CHANGELOG.md) para histórico completo de versões.
 ## Licença
 
 MIT
+
+## Roadmap
+
+- [ ] RCON integration for live server commands
+- [ ] Automated backups to cloud storage
+- [ ] Mod management UI (Steam Workshop browser)
+- [ ] Multi-language support (en, zh, pt-BR)
+- [ ] Server metrics dashboard (CPU, RAM, players)
+- [ ] Kubernetes support

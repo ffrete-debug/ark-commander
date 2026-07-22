@@ -106,9 +106,13 @@ func main() {
 	rl := middleware.NewRateLimiter(100, 200, time.Second)
 	r.Use(rl.Middleware())
 
-	// 最简单的CORS解决方案 - 允许所有来源（仅开发环境）
+	// CORS configurável via CORS_ORIGIN env (default: * para dev)
+	corsOrigin := os.Getenv("CORS_ORIGIN")
+	if corsOrigin == "" {
+		corsOrigin = "*"
+	}
 	r.Use(func(c *gin.Context) {
-		c.Header("Access-Control-Allow-Origin", "*")
+		c.Header("Access-Control-Allow-Origin", corsOrigin)
 		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 		c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Accept, Authorization, X-Requested-With")
 		c.Header("Access-Control-Allow-Credentials", "true")
