@@ -9,6 +9,10 @@ import (
 	"ark-server-commander/service/update"
 	"ark-server-commander/utils"
 	"ark-server-commander/websocket"
+	"os"
+	"syscall"
+	signal "os/signal"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -92,6 +96,10 @@ func main() {
 	// 创建Gin实例
 	r := gin.Default()
 
+	// Rate limiter: 100 requests/IP/second, burst 200
+	rl := middleware.NewRateLimiter(100, 200, time.Second)
+	r.Use(rl.Middleware())
+
 	// 最简单的CORS解决方案 - 允许所有来源（仅开发环境）
 	r.Use(func(c *gin.Context) {
 		c.Header("Access-Control-Allow-Origin", "*")
@@ -110,6 +118,16 @@ func main() {
 
 	// 注册路由
 	routes.RegisterRoutes(r, updateService, updateHub)
+
+	// Graceful shutdown
+	go func() {
+		quit := make(chan os.Signal, 1)
+		signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+		<-quit
+		utils.Info("收到关闭信号，正在优雅关闭...")
+		docker_manager.CloseDockerManager()
+		os.Exit(0)
+	}()
 
 	// 添加Swagger路由
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
