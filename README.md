@@ -2,7 +2,7 @@
 
 **Gerenciador web completo para servidores ARK: Survival Evolved em Docker**
 
-![Go](https://img.shields.io/badge/Go-1.24-blue) ![Next.js](https://img.shields.io/badge/Next.js-15-black) ![License](https://img.shields.io/badge/license-MIT-green)
+![Go](https://img.shields.io/badge/Go-1.24-blue) ![Next.js](https://img.shields.io/badge/Next.js-15-black) ![License](https://img.shields.io/badge/license-MIT-green) [![CI](https://github.com/ffrete-debug/ark-commander/actions/workflows/ci.yml/badge.svg)](https://github.com/ffrete-debug/ark-commander/actions/workflows/ci.yml)
 
 ---
 
