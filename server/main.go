@@ -94,7 +94,13 @@ func main() {
 	defer docker_manager.CloseDockerManager()
 
 	// 创建Gin实例
-	r := gin.Default()
+	r := gin.New() // custom middleware, no defaults
+
+	// Request ID per request
+	r.Use(middleware.RequestID())
+
+	// Recovery
+	r.Use(gin.Recovery())
 
 	// Rate limiter: 100 requests/IP/second, burst 200
 	rl := middleware.NewRateLimiter(100, 200, time.Second)
