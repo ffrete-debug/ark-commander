@@ -91,21 +91,21 @@ export default function InitPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p>{t('initCheck')}</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">{t('initCheck')}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div className="flex justify-end">
           <LanguageSwitcher />
         </div>
 
-        <Card>
+        <Card className="shadow-lg animate-in">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl text-center">{t('initTitle')}</CardTitle>
             <CardDescription className="text-center">
@@ -136,7 +136,7 @@ export default function InitPage() {
                   placeholder={t('enterPassword')}
                   disabled={isLoading}
                 />
-                <p className="text-sm text-gray-500">{t('passwordMinLength')}</p>
+                <p className="text-sm text-muted-foreground">{t('passwordMinLength')}</p>
               </div>
 
               <div className="space-y-2">
@@ -152,7 +152,7 @@ export default function InitPage() {
               </div>
 
               {error && (
-                <div className="text-red-600 text-sm text-center">
+                <div className="text-destructive text-sm text-center font-medium">
                   {error}
                 </div>
               )}
@@ -166,7 +166,7 @@ export default function InitPage() {
               </Button>
             </form>
 
-            <div className="mt-4 text-center text-sm text-gray-600">
+            <div className="mt-4 text-center text-sm text-muted-foreground">
               {t('initTip')}
             </div>
           </CardContent>

@@ -55,7 +55,7 @@ export function ServerCard({
   const t = useTranslations('servers');
   const [showPassword, setShowPassword] = useState(false);
 
-  // GetMap（）
+  // Get Map display name
   const getMapDisplayName = (mapName: string) => {
     const mapKey = `edit.maps.${mapName}`;
     const translatedName = t(mapKey);

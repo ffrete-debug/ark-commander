@@ -76,8 +76,8 @@ export default function ServerNewPage() {
             {tCommon('back')}
           </Button>
           <div>
-            <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">{t('createTitle')}</h1>
-            <p className="text-gray-600">{t('createServerDesc')}</p>
+            <h1 className="page-title">{t('createTitle')}</h1>
+            <p className="page-subtitle">{t('createServerDesc')}</p>
           </div>
         </div>
 
@@ -151,9 +151,9 @@ export default function ServerNewPage() {
                       className="absolute inset-y-0 right-0 pr-3 flex items-center"
                     >
                       {showPassword ? (
-                        <EyeOff className="h-4 w-4 text-gray-500" />
+                        <EyeOff className="h-4 w-4 text-muted-foreground" />
                       ) : (
-                        <Eye className="h-4 w-4 text-gray-500" />
+                        <Eye className="h-4 w-4 text-muted-foreground" />
                       )}
                     </button>
                   </div>
@@ -182,7 +182,7 @@ export default function ServerNewPage() {
             </TabsContent>
           </Tabs>
 
-          <div className="flex justify-end gap-2 mt-6 pt-6 border-t">
+          <div className="flex justify-end gap-2 mt-6 pt-6 border-t border-border">
             <Button variant="outline" onClick={handleBack}>
               {tCommon('cancel')}
             </Button>

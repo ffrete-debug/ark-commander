@@ -166,13 +166,13 @@ export default function HomePage() {
                         <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                             {t('title')}
                         </h1>
-                        <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+                        <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
                             {t('subtitle')}
                         </p>
                     </div>
 
-                    <div className="mt-8 p-4 border rounded-lg bg-gray-50">
-                        <h2 className="text-xl font-semibold mb-2">{t('systemInfo')}</h2>
+                    <div className="mt-8 p-4 border border-border rounded-lg bg-card">
+                        <h2 className="section-title mb-2">{t('systemInfo')}</h2>
                         <p><strong>{t('username')}:</strong> {profile?.username}</p>
                         <p><strong>{t('userID')}:</strong> {profile?.id}</p>
                     </div>

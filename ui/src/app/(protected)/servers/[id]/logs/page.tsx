@@ -84,14 +84,14 @@ export default function ServerLogsPage() {
           <ArrowLeft className="h-4 w-4 mr-1" />
           {tCommon('back')}
         </Button>
-        <h1 className="text-2xl font-bold text-gray-900">
+        <h1 className="text-2xl font-bold text-foreground">
           {t('serverLogs')}{server ? ` - ${server.session_name || server.identifier}` : ''}
         </h1>
         {server && (
           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-            server.status === 'running' ? 'bg-green-100 text-green-800' :
-            server.status === 'stopped' ? 'bg-red-100 text-red-800' :
-            'bg-yellow-100 text-yellow-800'
+            server.status === 'running' ? 'badge-success' :
+            server.status === 'stopped' ? 'badge-destructive' :
+            'badge-warning'
           }`}>
             {t(`card.${server.status}`)}
           </span>
@@ -99,7 +99,7 @@ export default function ServerLogsPage() {
       </div>
 
       {server && (
-        <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 bg-gray-50 rounded-lg px-4 py-2">
+        <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground bg-card rounded-lg px-4 py-2">
           <div className="flex items-center gap-1">
             <Map className="h-4 w-4" />
             <span className="font-medium">{t('card.map')}:</span>
