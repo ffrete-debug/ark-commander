@@ -198,6 +198,6 @@ export function getPresetByName(name: string): ServerPreset | undefined {
 
 export function presetToIni(preset: ServerPreset): string {
   return Object.entries(preset.iniSections)
-    .map(([section, kv]) => `[${section}]\n${Object.entries(kv).map(([k, v]) => `${k}=${v}`).join('\n')}`)
+    .map(([section, kv]) => `${section}\n${Object.entries(kv).map(([k, v]) => `${k}=${v}`).join('\n')}`)
     .join('\n\n');
 }

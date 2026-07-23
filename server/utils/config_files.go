@@ -41,7 +41,6 @@ bDisableStructurePlacementCollision=false
 bAllowFlyerCarryPvE=true
 bDisableStructureDecayPvE=false
 bAllowUnlimitedRespecs=true
-bAllowPlatformSaddleMultiFloors=true
 bPassiveDefensesDamageRiderlessDinos=true
 MaxNumberOfPlayersInTribe=0
 

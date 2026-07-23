@@ -15,6 +15,7 @@ import { GameUserSettingsEditor } from '@/components/servers/GameUserSettingsEdi
 import { GameIniEditor } from '@/components/servers/GameIniEditor';
 import { ServerArgsEditor } from '@/components/servers/ServerArgsEditor';
 import { MapSelector } from '@/components/servers/MapSelector';
+import { PresetSelector } from '@/components/servers/PresetSelector';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function ServerNewPage() {
@@ -173,7 +174,19 @@ export default function ServerNewPage() {
             </TabsContent>
 
             <TabsContent value="game_ini">
-              <GameIniEditor />
+              <div className="space-y-4 py-4">
+                <details className="group">
+                  <summary className="cursor-pointer text-sm font-medium text-muted-foreground hover:text-foreground">
+                    Presets (PVE/PVP)
+                  </summary>
+                  <div className="mt-3">
+                    <PresetSelector onSelect={(ini, name) => {
+                      setFormData(p => ({ ...p, game_ini: ini }));
+                    }} />
+                  </div>
+                </details>
+                <GameIniEditor />
+              </div>
             </TabsContent>
 
             <TabsContent value="server_args">

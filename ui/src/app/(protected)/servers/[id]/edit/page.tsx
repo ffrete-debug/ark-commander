@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, ArrowLeft, Save, Eye, EyeOff, Download, Upload } from 'lucide-react';
 import { GameUserSettingsEditor } from '@/components/servers/GameUserSettingsEditor';
 import { GameIniEditor } from '@/components/servers/GameIniEditor';
+import { PresetSelector } from '@/components/servers/PresetSelector';
 import { ServerArgsEditor } from '@/components/servers/ServerArgsEditor';
 import { MapSelector } from '@/components/servers/MapSelector';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -294,15 +295,27 @@ export default function ServerEditPage() {
             </TabsContent>
 
             <TabsContent value="game_ini">
-              <div className="flex justify-end gap-2 mb-2">
-                <Button variant="outline" size="sm" onClick={() => handleDownloadText(formData.game_ini || '', 'Game.ini')}>
-                  <Download className="h-3 w-3 mr-1" />{tServersEdit('exportFile')}
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => handleImportFile('.ini,.txt', (text) => setFormData(p => ({ ...p, game_ini: text })))}>
-                  <Upload className="h-3 w-3 mr-1" />{tServersEdit('importFile')}
-                </Button>
+              <div className="space-y-4 py-4">
+                <details className="group">
+                  <summary className="cursor-pointer text-sm font-medium text-muted-foreground hover:text-foreground">
+                    Presets (PVE/PVP)
+                  </summary>
+                  <div className="mt-3">
+                    <PresetSelector onSelect={(ini) => {
+                      setFormData(p => ({ ...p, game_ini: ini }));
+                    }} />
+                  </div>
+                </details>
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" size="sm" onClick={() => handleDownloadText(formData.game_ini || '', 'Game.ini')}>
+                    <Download className="h-3 w-3 mr-1" />{tServersEdit('exportFile')}
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => handleImportFile('.ini,.txt', (text) => setFormData(p => ({ ...p, game_ini: text })))}>
+                    <Upload className="h-3 w-3 mr-1" />{tServersEdit('importFile')}
+                  </Button>
+                </div>
+                <GameIniEditor />
               </div>
-              <GameIniEditor />
             </TabsContent>
 
             <TabsContent value="server_args">
