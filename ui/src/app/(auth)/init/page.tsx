@@ -8,7 +8,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuthActions, useIsAuthenticated } from '@/stores/auth';
-import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 
 export default function InitPage() {
   const t = useTranslations('auth');
@@ -102,7 +101,6 @@ export default function InitPage() {
     <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div className="flex justify-end">
-          <LanguageSwitcher />
         </div>
 
         <Card className="shadow-lg animate-in">

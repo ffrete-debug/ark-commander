@@ -6,27 +6,13 @@ import { Server } from '@/stores/servers';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
 import {
-  Play,
-  Square,
-  Loader2,
-  HelpCircle,
-  Info,
-  Edit,
-  Trash2,
-  Wifi,
-  Lock,
-  Eye,
-  EyeOff,
-  Copy,
-  RefreshCw,
-  Map,
+  Play, Square, Loader2, Info, Edit, Trash2, Wifi, Lock, Eye, EyeOff, Copy, RefreshCw, Map,
 } from 'lucide-react';
 
 interface ServerCardProps {
@@ -42,130 +28,54 @@ interface ServerCardProps {
 }
 
 export function ServerCard({
-  server,
-  canStartServer,
-  onStart,
-  onStop,
-  onRestart,
-  onEdit,
-  onDelete,
-  onViewLogs,
-  mapClickable,
+  server, canStartServer, onStart, onStop, onRestart, onEdit, onDelete, onViewLogs, mapClickable,
 }: ServerCardProps) {
   const t = useTranslations('servers');
   const [showPassword, setShowPassword] = useState(false);
 
-  // Get Map display name
   const getMapDisplayName = (mapName: string) => {
     const mapKey = `edit.maps.${mapName}`;
     const translatedName = t(mapKey);
-    // Ifkey，；No
     return translatedName !== mapKey ? translatedName : mapName;
   };
 
-  const getStatusVariant = (status: Server['status']): 'default' | 'destructive' | 'secondary' | 'outline' => {
-    switch (status) {
-      case 'running':
-        return 'default';
-      case 'stopped':
-        return 'destructive';
-      case 'starting':
-      case 'stopping':
-      case 'restarting':
-        return 'secondary';
-      default:
-        return 'outline';
+  const getStatusVariant = (s: Server['status']): 'default' | 'destructive' | 'secondary' | 'outline' => {
+    switch (s) {
+      case 'running': return 'default';
+      case 'stopped': return 'destructive';
+      case 'starting': case 'stopping': case 'restarting': return 'secondary';
+      default: return 'outline';
     }
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    // You might want to add a toast notification here
-  };
-
-  const StartStopButton = () => {
-    switch (server.status) {
-      case 'running':
-        return (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-            onClick={() => onStop(server)}
-          >
-            <Square className="h-4 w-4" />
-          </Button>
-        );
-      case 'stopped':
-        return (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50"
-            onClick={() => onStart(server)}
-            disabled={!canStartServer}
-          >
-            <Play className="h-4 w-4" />
-          </Button>
-        );
-      case 'starting':
-      case 'stopping':
-      case 'restarting':
-        return (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 w-8 p-0 text-blue-600"
-            disabled
-          >
-            <Loader2 className="h-4 w-4 animate-spin" />
-          </Button>
-        );
-      default:
-        return (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 w-8 p-0 text-gray-400"
-            disabled
-          >
-            <HelpCircle className="h-4 w-4" />
-          </Button>
-        );
-    }
-  };
+  const iconBtn = (icon: React.ReactNode, onClick?: () => void, className = '', disabled = false) => (
+    <Button variant="ghost" size="sm" className={`h-8 w-8 p-0 ${className}`} onClick={onClick} disabled={disabled}>
+      {icon}
+    </Button>
+  );
 
   return (
-    <Card className="h-full hover:shadow-lg transition-all duration-200 border-0 shadow-sm">
-      <CardHeader className="pb-3">
-        <div className="flex justify-between items-start mb-2">
-          <CardTitle className="text-base font-semibold truncate pr-2">{server.session_name}</CardTitle>
-          <div className="flex items-center gap-1 flex-shrink-0">
-            {/* Start/Stop  */}
-            {StartStopButton()}
-
-            {/* Restart  */}
-            {server.status === 'running' && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0 text-orange-600 hover:text-orange-700 hover:bg-orange-50"
-                onClick={() => onRestart(server)}
-              >
-                <RefreshCw className="h-4 w-4" />
-              </Button>
+    <Card className="h-full border-0 shadow-sm">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-base font-semibold truncate">{server.session_name}</CardTitle>
+        {/* Badge + action buttons row */}
+        <div className="flex items-center justify-between mt-1">
+          <Badge variant={getStatusVariant(server.status)} className="text-xs px-2 py-0.5">
+            {t(`card.${server.status}`)}
+          </Badge>
+          <div className="flex items-center gap-0.5 flex-shrink-0">
+            {server.status === 'running' ? (
+              iconBtn(<Square className="h-4 w-4" />, () => onStop(server), 'text-red-600 hover:text-red-700 hover:bg-red-50')
+            ) : server.status === 'stopped' ? (
+              iconBtn(<Play className="h-4 w-4" />, () => onStart(server), 'text-green-600 hover:text-green-700 hover:bg-green-50', !canStartServer)
+            ) : (
+              iconBtn(<Loader2 className="h-4 w-4 animate-spin" />, undefined, 'text-blue-600', true)
             )}
-
-            {/* Delete  */}
+            {server.status === 'running' && iconBtn(<RefreshCw className="h-4 w-4" />, () => onRestart(server), 'text-orange-600 hover:text-orange-700 hover:bg-orange-50')}
+            {iconBtn(<Edit className="h-4 w-4" />, () => onEdit(server), 'text-blue-600 hover:text-blue-700 hover:bg-blue-50')}
             <Popover>
               <PopoverTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                {iconBtn(<Trash2 className="h-4 w-4" />, undefined, 'text-red-600 hover:text-red-700 hover:bg-red-50')}
               </PopoverTrigger>
               <PopoverContent>
                 <div className="space-y-2">
@@ -174,119 +84,62 @@ export function ServerCard({
                 </div>
               </PopoverContent>
             </Popover>
-
-            {/* Edit  */}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-              onClick={() => onEdit(server)}
-            >
-              <Edit className="h-4 w-4" />
-            </Button>
-
-            {/*  （ Map ） */}
-            {onViewLogs && mapClickable && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
-                onClick={() => onViewLogs(server)}
-                title={t('serverLogs')}
-              >
-                <Map className="h-4 w-4" />
-              </Button>
-            )}
+            {onViewLogs && mapClickable && iconBtn(<Map className="h-4 w-4" />, () => onViewLogs(server), 'text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50')}
           </div>
         </div>
-        <Badge
-          variant={getStatusVariant(server.status)}
-          className="w-fit text-xs px-2 py-1"
-        >
-          {server.status}
-        </Badge>
       </CardHeader>
-      <CardContent className="pt-0 space-y-3">
-        {/*   -   */}
-        <div className="bg-gray-50 rounded-lg p-3">
-          <div className="flex items-center mb-2">
-            <Wifi className="h-3.5 w-3.5 text-blue-600 mr-1.5" />
-            <span className="text-xs font-medium text-gray-700">{t('card.portConfig')}</span>
+      <CardContent className="pt-2 space-y-2">
+        <div className="bg-muted/50 rounded-lg p-2.5">
+          <div className="flex items-center mb-1.5">
+            <Wifi className="h-3.5 w-3.5 text-primary mr-1.5" />
+            <span className="text-xs font-medium text-foreground/80">{t('card.portConfig')}</span>
           </div>
-          <div className="grid grid-cols-3 gap-2 text-xs">
-            <div className="text-center">
-              <div className="text-gray-500">{t('card.gamePort')}</div>
-              <div className="font-mono font-semibold">{server.port}</div>
-            </div>
-            <div className="text-center">
-              <div className="text-gray-500">{t('card.queryPort')}</div>
-              <div className="font-mono font-semibold">{server.query_port}</div>
-            </div>
-            <div className="text-center">
-              <div className="text-gray-500">RCON</div>
-              <div className="font-mono font-semibold">{server.rcon_port}</div>
-            </div>
+          <div className="grid grid-cols-3 gap-2 text-xs text-center">
+            {[
+              [t('card.gamePort'), server.port],
+              [t('card.queryPort'), server.query_port],
+              ['RCON', server.rcon_port],
+            ].map(([label, val]) => (
+              <div key={String(label)}>
+                <div className="text-muted-foreground">{label}</div>
+                <div className="font-mono font-semibold">{val}</div>
+              </div>
+            ))}
           </div>
         </div>
-
-        {/* Servers  */}
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-600 flex items-center">
-              <Info className="h-3.5 w-3.5 mr-1.5 text-green-600" />
-              {t('card.map')}
-            </span>
+            <span className="text-muted-foreground flex items-center"><Info className="h-3.5 w-3.5 mr-1.5 text-green-600" />{t('card.map')}</span>
             {onViewLogs && mapClickable ? (
-              <button
-                onClick={() => onViewLogs(server)}
-                className="font-medium truncate ml-2 text-emerald-600 hover:text-emerald-700 hover:underline flex items-center gap-1"
-                title={t('serverLogs')}
-              >
-                <Map className="h-3 w-3" />
-                {getMapDisplayName(server.map)}
+              <button onClick={() => onViewLogs(server)} className="font-medium truncate ml-2 text-emerald-600 hover:underline flex items-center gap-1">
+                <Map className="h-3 w-3" />{getMapDisplayName(server.map)}
               </button>
             ) : (
               <span className="font-medium truncate ml-2">{getMapDisplayName(server.map)}</span>
             )}
           </div>
           <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-600">{t('card.maxPlayers')}</span>
+            <span className="text-muted-foreground">{t('card.maxPlayers')}</span>
             <span className="font-medium">{server.max_players}</span>
           </div>
         </div>
-
-        {/*  Password */}
-        <div className="bg-amber-50 rounded-lg p-2">
+        <div className="bg-amber-50 dark:bg-amber-950/30 rounded-lg p-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <Lock className="h-3.5 w-3.5 text-amber-600 mr-1.5" />
-              <span className="text-xs font-medium text-gray-700">{t('card.adminPassword')}</span>
+              <span className="text-xs font-medium text-amber-800 dark:text-amber-200">{t('card.adminPassword')}</span>
             </div>
             <div className="flex items-center gap-1">
-              <span className="font-mono text-xs">
-                {showPassword ? server.admin_password : '••••••••'}
-              </span>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 w-6 p-0"
-                onClick={() => setShowPassword(!showPassword)}
-              >
+              <span className="font-mono text-xs">{showPassword ? server.admin_password : '••••••••'}</span>
+              <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => setShowPassword(!showPassword)}>
                 {showPassword ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
               </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 w-6 p-0"
-                onClick={() => copyToClipboard(server.admin_password)}
-              >
+              <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => navigator.clipboard.writeText(server.admin_password)}>
                 <Copy className="h-3 w-3" />
               </Button>
             </div>
           </div>
         </div>
-
-
       </CardContent>
     </Card>
   );

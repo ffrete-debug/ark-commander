@@ -2,13 +2,13 @@
 
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Link } from '@/navigation';
 import { useAuthUser } from '@/stores/auth';
 import { useImageStatus, serversActions } from '@/stores/servers';
 import { ImageStatus } from '@/components/docker/ImageStatus';
 import { useEffect, useRef, useCallback } from 'react';
-import { Server } from 'lucide-react';
+import { Server, Monitor, Activity, Users } from 'lucide-react';
 import Cookies from 'js-cookie';
 
 export default function HomePage() {
@@ -18,277 +18,151 @@ export default function HomePage() {
     const { getImageStatus } = serversActions;
     const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-    // Get image status
     const refreshImageStatus = useCallback(async () => {
-        try {
-            await getImageStatus();
-        } catch (error) {
-            console.error('Failed to get image status:', error);
-        }
+        try { await getImageStatus(); }
+        catch (error) { console.error('Failed to get image status:', error); }
     }, [getImageStatus]);
 
-    // Handle manual download
     const handleManualDownload = async () => {
         if (!imageStatus?.images) return;
-
-        // Find the first image that is not ready
         const notReadyImage = Object.entries(imageStatus.images).find(([, status]) => !status.ready);
-
-        if (!notReadyImage) {
-            console.log('All images are ready');
-            return;
-        }
-
-        const imageName = notReadyImage[0];
-        await handleDownloadImage(imageName);
+        if (!notReadyImage) { console.log('All images are ready'); return; }
+        await handleDownloadImage(notReadyImage[0]);
     };
 
-    // Handle single image download
     const handleDownloadImage = async (imageName: string) => {
         try {
             const token = Cookies.get('auth-token');
             const response = await fetch('/api/images/pull', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
-                body: JSON.stringify({
-                    image_name: imageName
-                })
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ image_name: imageName })
             });
-
-            if (!response.ok) {
-                throw new Error('Failed to download image');
-            }
-
-            console.log(`Image ${imageName} started downloading`);
-
-            // Start polling status
+            if (!response.ok) throw new Error('Failed to download image');
             startPolling();
-        } catch (error) {
-            console.error('Failed to download image:', error);
-        }
+        } catch (error) { console.error('Failed to download image:', error); }
     };
 
-    // Handle single image update
     const handleUpdateImage = async (imageName: string) => {
         try {
             const token = Cookies.get('auth-token');
             const response = await fetch('/api/images/update', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
-                body: JSON.stringify({
-                    image_name: imageName
-                })
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ image_name: imageName })
             });
-
-            if (!response.ok) {
-                throw new Error('Failed to update image');
-            }
-
-            console.log(`Image ${imageName} started updating`);
-
-            // Start polling status
+            if (!response.ok) throw new Error('Failed to update image');
             startPolling();
-        } catch (error) {
-            console.error('Failed to update image:', error);
-        }
+        } catch (error) { console.error('Failed to update image:', error); }
     };
 
-    // Handle check updates
     const handleCheckUpdates = async () => {
         try {
             const token = Cookies.get('auth-token');
             const response = await fetch('/api/images/check-updates', {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                },
+                headers: { 'Authorization': `Bearer ${token}` },
             });
-
-            if (!response.ok) {
-                throw new Error('Failed to check updates');
-            }
-
-            console.log('Image update check completed');
-
-            // Refresh image status to show update results
+            if (!response.ok) throw new Error('Failed to check updates');
             await refreshImageStatus();
-        } catch (error) {
-            console.error('Failed to check updates:', error);
-        }
+        } catch (error) { console.error('Failed to check updates:', error); }
     };
 
-    // Start polling status
     const startPolling = () => {
-        if (pollingIntervalRef.current) {
-            clearInterval(pollingIntervalRef.current);
-        }
-
+        if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
         pollingIntervalRef.current = setInterval(async () => {
             await refreshImageStatus();
-
-            // Stop polling if no images are pulling
-            if (!imageStatus?.any_pulling) {
-                stopPolling();
-            }
+            if (!imageStatus?.any_pulling) stopPolling();
         }, 2000);
     };
 
-    // Stop polling
     const stopPolling = () => {
-        if (pollingIntervalRef.current) {
-            clearInterval(pollingIntervalRef.current);
-            pollingIntervalRef.current = null;
-        }
+        if (pollingIntervalRef.current) { clearInterval(pollingIntervalRef.current); pollingIntervalRef.current = null; }
     };
 
     useEffect(() => {
         refreshImageStatus();
-
-        return () => {
-            stopPolling();
-        };
+        return () => stopPolling();
     }, [refreshImageStatus]);
 
+    const quickLinks = [
+        { href: '/servers', icon: Server, label: t('serverManagement'), desc: t('serverManagementDesc'), color: 'blue' },
+        { href: '#', icon: Users, label: t('playerManagement'), desc: t('playerManagementDesc'), color: 'gray', disabled: true },
+        { href: '/servers', icon: Activity, label: t('logMonitoring'), desc: t('logMonitoringDesc'), color: 'green' },
+    ];
+
     return (
-        <div className="w-full max-w-none py-8 space-y-8">
-            {/* Welcome title area */}
-            <Card>
-                <CardContent className="p-8">
-                    <div className="text-center space-y-6">
-                        <div className="mx-auto w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
-                            <Server className="w-8 h-8 text-white" />
+        <div className="h-[calc(100vh-4rem)] flex flex-col gap-4 py-4">
+            {/* Top row: welcome + image status */}
+            <div className="flex gap-4 flex-1 min-h-0">
+                {/* Welcome card */}
+                <Card className="flex-[2] border-0 shadow-sm">
+                    <CardContent className="p-6 h-full flex flex-col justify-center">
+                        <div className="flex items-center gap-4">
+                            <div className="w-14 h-14 bg-gradient-to-br from-primary to-primary/70 rounded-2xl flex items-center justify-center shadow-lg">
+                                <Monitor className="w-7 h-7 text-primary-foreground" />
+                            </div>
+                            <div>
+                                <h1 className="text-2xl font-bold text-foreground">{t('title')}</h1>
+                                <p className="text-sm text-muted-foreground">{t('subtitle')}</p>
+                            </div>
                         </div>
-                        <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                            {t('title')}
-                        </h1>
-                        <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-                            {t('subtitle')}
-                        </p>
-                    </div>
-
-                    <div className="mt-8 p-4 border border-border rounded-lg bg-card">
-                        <h2 className="section-title mb-2">{t('systemInfo')}</h2>
-                        <p><strong>{t('username')}:</strong> {profile?.username}</p>
-                        <p><strong>{t('userID')}:</strong> {profile?.id}</p>
-                    </div>
-                </CardContent>
-            </Card>
-
-            {/* Image management area */}
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-2xl font-semibold text-gray-900">
-                        {t('imageManagement')}
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    {imageStatus ? (
-                        <ImageStatus
-                            imageStatus={imageStatus}
-                            onRefresh={refreshImageStatus}
-                            onManualDownload={handleManualDownload}
-                            onCheckUpdates={handleCheckUpdates}
-                            onDownloadImage={handleDownloadImage}
-                            onUpdateImage={handleUpdateImage}
-                        />
-                    ) : (
-                        <div className="text-center py-8">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                            <p className="mt-2 text-gray-600">Loading image status...</p>
+                        <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                            <div className="bg-muted/50 rounded-lg p-3">
+                                <span className="text-muted-foreground">{t('username')}</span>
+                                <p className="font-semibold text-foreground">{profile?.username}</p>
+                            </div>
+                            <div className="bg-muted/50 rounded-lg p-3">
+                                <span className="text-muted-foreground">{t('userID')}</span>
+                                <p className="font-semibold text-foreground">#{profile?.id}</p>
+                            </div>
                         </div>
-                    )}
-                </CardContent>
-            </Card>
+                    </CardContent>
+                </Card>
 
-            {/* Feature card grid */}
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-2xl font-semibold text-gray-900">
-                        {t('features')}
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <Link href="/servers" className="block">
-                            <Card className="h-full hover:shadow-xl transition-all duration-300 cursor-pointer group border-2 border-transparent hover:border-blue-200">
-                                <CardContent className="text-center space-y-6 p-6">
-                                    <div className="mx-auto w-12 h-12 bg-blue-100 group-hover:bg-blue-200 rounded-full flex items-center justify-center transition-colors">
-                                        <Server className="w-6 h-6 text-blue-600" />
-                                    </div>
-                                    <div>
-                                        <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                                            {t('serverManagement')}
-                                        </h3>
-                                        <p className="text-gray-600 leading-relaxed">
-                                            {t('serverManagementDesc')}
-                                        </p>
-                                    </div>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="group-hover:bg-blue-50 text-blue-600"
-                                    >
-                                        {t('startManage')}
-                                        <span className="ml-1">→</span>
-                                    </Button>
-                                </CardContent>
-                            </Card>
-                        </Link>
+                {/* Image status card */}
+                <Card className="flex-[3] border-0 shadow-sm">
+                    <CardContent className="p-6 h-full flex flex-col">
+                        <h2 className="section-title mb-3">{t('imageManagement')}</h2>
+                        <div className="flex-1 min-h-0 overflow-auto">
+                            {imageStatus ? (
+                                <ImageStatus
+                                    imageStatus={imageStatus}
+                                    onRefresh={refreshImageStatus}
+                                    onManualDownload={handleManualDownload}
+                                    onCheckUpdates={handleCheckUpdates}
+                                    onDownloadImage={handleDownloadImage}
+                                    onUpdateImage={handleUpdateImage}
+                                />
+                            ) : (
+                                <div className="flex items-center justify-center h-full">
+                                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                                    <p className="ml-2 text-sm text-muted-foreground">Loading...</p>
+                                </div>
+                            )}
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
 
-                        <Card className="h-full opacity-60 border-2 border-gray-100">
-                            <CardContent className="text-center space-y-6 p-6">
-                                <div className="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
-                                    <span className="text-2xl">👥</span>
+            {/* Quick links grid */}
+            <div className="grid grid-cols-3 gap-4">
+                {quickLinks.map(({ href, icon: Icon, label, desc, color, disabled }) => (
+                    <Link key={label} href={disabled ? '#' : href} className={disabled ? 'cursor-default' : ''}>
+                        <Card className={`border-0 shadow-sm transition-all duration-200 ${disabled ? 'opacity-50' : 'hover:shadow-md hover:-translate-y-0.5 cursor-pointer'}`}>
+                            <CardContent className="p-4 flex items-center gap-3">
+                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center bg-${color}-100 dark:bg-${color}-950/30`}>
+                                    <Icon className={`w-5 h-5 text-${color}-600`} />
                                 </div>
-                                <div>
-                                    <h3 className="text-xl font-semibold text-gray-500 mb-2">
-                                        {t('playerManagement')}
-                                    </h3>
-                                    <p className="text-gray-400 leading-relaxed">
-                                        {t('playerManagementDesc')}
-                                    </p>
+                                <div className="min-w-0">
+                                    <p className="text-sm font-semibold text-foreground truncate">{label}</p>
+                                    <p className="text-xs text-muted-foreground truncate">{desc}</p>
                                 </div>
-                                <Button variant="secondary" size="sm" disabled>
-                                    {t('comingSoon')}
-                                </Button>
+                                {disabled && <span className="ml-auto text-[10px] uppercase text-muted-foreground tracking-wide">Soon</span>}
                             </CardContent>
                         </Card>
-
-                        <Link href="/servers" className="block">
-                            <Card className="h-full hover:shadow-xl transition-all duration-300 cursor-pointer group border-2 border-transparent hover:border-green-200">
-                                <CardContent className="text-center space-y-6 p-6">
-                                    <div className="mx-auto w-12 h-12 bg-green-100 group-hover:bg-green-200 rounded-full flex items-center justify-center transition-colors">
-                                        <span className="text-2xl">📊</span>
-                                    </div>
-                                    <div>
-                                        <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                                            {t('logMonitoring')}
-                                        </h3>
-                                        <p className="text-gray-600 leading-relaxed">
-                                            {t('logMonitoringDesc')}
-                                        </p>
-                                    </div>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="group-hover:bg-green-50 text-green-600"
-                                    >
-                                        {t('startManage')}
-                                        <span className="ml-1">→</span>
-                                    </Button>
-                                </CardContent>
-                            </Card>
-                        </Link>
-                    </div>
-                </CardContent>
-            </Card>
-
-            <p className="text-center text-sm text-gray-500">{t('tip')}</p>
+                    </Link>
+                ))}
+            </div>
         </div>
     );
 }

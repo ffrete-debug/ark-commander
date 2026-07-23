@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link, usePathname, useRouter } from '@/navigation';
 import { useIsAuthenticated, useAuthActions, useAuthIsInitialized } from '@/stores/auth';
-import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { Moon, Sun, LogOut } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export default function ProtectedLayout({
   children,
@@ -17,98 +18,80 @@ export default function ProtectedLayout({
   const { initFromStorage, logout } = useAuthActions();
   const t = useTranslations('navigation');
   const pathname = usePathname();
+  const [dark, setDark] = useState(false);
 
   useEffect(() => {
-    if (!isInitialized) {
-      initFromStorage();
-    }
+    if (!isInitialized) initFromStorage();
   }, [initFromStorage, isInitialized]);
 
   useEffect(() => {
-    // Only redirect when initialized and not authenticated
-    if (isInitialized && !isAuthenticated) {
-      router.replace('/login');
-    }
+    if (isInitialized && !isAuthenticated) router.replace('/login');
   }, [isAuthenticated, isInitialized, router]);
 
-  // Show loading state when not yet initialized
+  const toggleDark = () => {
+    const next = !dark;
+    setDark(next);
+    document.documentElement.classList.toggle('dark', next);
+  };
+
   if (!isInitialized) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="">Initializing...</p>
+          <p className="text-muted-foreground">Initializing...</p>
         </div>
       </div>
     );
   }
 
-  // Show verification state when initialized but not authenticated (will redirect shortly)
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p>Verifying...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Verifying...</p>
         </div>
       </div>
     );
   }
 
+  const navLink = (href: string, label: string, active: boolean) => (
+    <Link
+      href={href}
+      className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+        active ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+      }`}
+    >
+      {label}
+    </Link>
+  );
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm border-b">
+    <div className="min-h-screen bg-background">
+      <header className="bg-card border-b border-border sticky top-0 z-50">
         <div className="w-full px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <h1 className="text-xl font-semibold text-gray-900">
-                ARK Server Manager
-              </h1>
-              <nav className="ml-10 flex items-baseline space-x-4">
-                <Link
-                  href="/home"
-                  className={`px-3 py-2 rounded-md text-sm font-medium ${pathname === '/home'
-                      ? 'bg-gray-200 text-gray-900'
-                      : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
-                    }`}
-                >
-                  {t('home')}
-                </Link>
-                <Link
-                  href="/servers"
-                  className={`px-3 py-2 rounded-md text-sm font-medium ${pathname.startsWith('/servers')
-                      ? 'bg-gray-200 text-gray-900'
-                      : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
-                    }`}
-                >
-                  {t('servers')}
-                </Link>
-                <Link
-                  href="/plugins"
-                  className={`px-3 py-2 rounded-md text-sm font-medium ${pathname.startsWith('/plugins')
-                      ? 'bg-gray-200 text-gray-900'
-                      : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
-                    }`}
-                >
-                  {t('plugins')}
-                </Link>
+          <div className="flex justify-between items-center h-14">
+            <div className="flex items-center gap-6">
+              <h1 className="text-lg font-semibold text-foreground">ARK Server Manager</h1>
+              <nav className="flex items-center gap-1">
+                {navLink('/home', t('home'), pathname === '/home')}
+                {navLink('/servers', t('servers'), pathname.startsWith('/servers'))}
+                {navLink('/plugins', t('plugins'), pathname.startsWith('/plugins'))}
               </nav>
             </div>
-            <div className="flex items-center space-x-4">
-              <LanguageSwitcher />
-              <button
-                onClick={logout}
-                className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium"
-              >
-                Log out
-              </button>
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={toggleDark} title={dark ? 'Light mode' : 'Dark mode'}>
+                {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              </Button>
+              <Button variant="ghost" size="sm" className="h-8 text-muted-foreground hover:text-destructive" onClick={logout}>
+                <LogOut className="h-4 w-4 mr-1" /> Log out
+              </Button>
             </div>
           </div>
         </div>
       </header>
-      <main className="w-full py-6 px-4 sm:px-6 lg:px-8">
-        {children}
-      </main>
+      <main className="w-full py-4 px-4 sm:px-6 lg:px-8">{children}</main>
     </div>
   );
 }
