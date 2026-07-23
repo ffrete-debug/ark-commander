@@ -57,7 +57,7 @@ export function ServerCard({
   return (
     <Card className="h-full border-0 shadow-sm">
       <CardHeader className="pb-2">
-        <CardTitle className="text-base font-semibold truncate">{server.session_name}</CardTitle>
+        <CardTitle className="text-base font-semibold">{server.session_name}</CardTitle>
         {/* Badge + action buttons row */}
         <div className="flex items-center justify-between mt-1">
           <Badge variant={getStatusVariant(server.status)} className="text-xs px-2 py-0.5">
