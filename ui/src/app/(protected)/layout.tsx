@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link, usePathname, useRouter } from '@/navigation';
 import { useIsAuthenticated, useAuthActions, useAuthIsInitialized } from '@/stores/auth';
-import { Moon, Sun, LogOut } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function ProtectedLayout({
@@ -18,7 +18,6 @@ export default function ProtectedLayout({
   const { initFromStorage, logout } = useAuthActions();
   const t = useTranslations('navigation');
   const pathname = usePathname();
-  const [dark, setDark] = useState(false);
 
   useEffect(() => {
     if (!isInitialized) initFromStorage();
@@ -27,12 +26,6 @@ export default function ProtectedLayout({
   useEffect(() => {
     if (isInitialized && !isAuthenticated) router.replace('/login');
   }, [isAuthenticated, isInitialized, router]);
-
-  const toggleDark = () => {
-    const next = !dark;
-    setDark(next);
-    document.documentElement.classList.toggle('dark', next);
-  };
 
   if (!isInitialized) {
     return (
@@ -81,9 +74,6 @@ export default function ProtectedLayout({
               </nav>
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={toggleDark} title={dark ? 'Light mode' : 'Dark mode'}>
-                {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-              </Button>
               <Button variant="ghost" size="sm" className="h-8 text-muted-foreground hover:text-destructive" onClick={logout}>
                 <LogOut className="h-4 w-4 mr-1" /> Log out
               </Button>
